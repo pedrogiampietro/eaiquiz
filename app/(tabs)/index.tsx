@@ -1,20 +1,36 @@
 import { Stack } from 'expo-router';
-import { StyleSheet, View, Text, Image, TouchableOpacity } from 'react-native';
-import FontAwesome from '@expo/vector-icons/FontAwesome'; // Importando FontAwesome para o ícone
+import {
+  StyleSheet,
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  ScrollView,
+  FlatList,
+} from 'react-native';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
 
 const quizCardImage = require('../../assets/recent-quiz.png');
-const featuredCardImage = require('../../assets/mask-group.png'); // Imagem de fundo do card "Featured"
-const topLeftIcon = require('../../assets/top-left-icon.png'); // Imagem do canto superior esquerdo
-const bottomRightIcon = require('../../assets/bottom-right-icon.png'); // Imagem do canto inferior direito
+const featuredCardImage = require('../../assets/mask-group.png');
+const topLeftIcon = require('../../assets/top-left-icon.png');
+const bottomRightIcon = require('../../assets/bottom-right-icon.png');
+const liveQuizIcon = require('../../assets/live-quiz-icon.png');
+
+const liveQuizzesData = [
+  { id: '1', name: 'Statistics Math Quiz', detail: 'Math • 12 Quizzes' },
+  { id: '2', name: 'Integers Quiz', detail: 'Math • 10 Quizzes' },
+  { id: '3', name: 'Integers Quiz', detail: 'Math • 10 Quizzes' },
+];
 
 export default function Home() {
   return (
     <>
-      <Stack.Screen options={{ title: 'Tab One' }} />
-      <View style={styles.container}>
+      <Stack.Screen options={{ title: 'Home' }} />
+      <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
         <RecentQuiz />
         <Featured />
-      </View>
+        <LiveQuizzes />
+      </ScrollView>
     </>
   );
 }
@@ -50,14 +66,45 @@ const Featured = () => (
   </View>
 );
 
+const LiveQuizzes = () => (
+  <View style={styles.liveQuizzesContainer}>
+    <View style={styles.liveQuizzesHeader}>
+      <Text style={styles.liveQuizzesTitle}>Live Quizzes</Text>
+      <TouchableOpacity>
+        <Text style={styles.seeAllText}>See all</Text>
+      </TouchableOpacity>
+    </View>
+
+    <FlatList
+      data={liveQuizzesData}
+      keyExtractor={(item) => item.id}
+      renderItem={({ item }) => (
+        <View style={styles.liveQuizCard}>
+          <Image source={liveQuizIcon} style={styles.liveQuizIcon} />
+          <View style={styles.liveQuizInfo}>
+            <Text style={styles.liveQuizName}>{item.name}</Text>
+            <Text style={styles.liveQuizDetail}>{item.detail}</Text>
+          </View>
+          <FontAwesome name="chevron-right" size={18} color="#6A5AE0" />
+        </View>
+      )}
+    />
+  </View>
+);
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 24,
+    paddingHorizontal: 0,
+    paddingTop: 24,
     backgroundColor: '#6A5AE0',
+  },
+  contentContainer: {
+    paddingBottom: 20,
   },
   quizContainer: {
     marginBottom: 20,
+    paddingHorizontal: 24,
   },
   quizTitle: {
     position: 'absolute',
@@ -103,6 +150,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     borderRadius: 15,
     overflow: 'hidden',
+    marginHorizontal: 24,
   },
   featuredCardImage: {
     width: '100%',
@@ -158,5 +206,55 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#6A5AE0',
     fontWeight: 'bold',
+  },
+  liveQuizzesContainer: {
+    backgroundColor: '#FFF',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingTop: 20,
+    paddingBottom: 10,
+    marginTop: 20,
+    paddingHorizontal: 24,
+  },
+  liveQuizzesHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  liveQuizzesTitle: {
+    fontSize: 18,
+    color: '#333',
+    fontWeight: 'bold',
+  },
+  seeAllText: {
+    fontSize: 14,
+    color: '#6A5AE0',
+    fontWeight: 'bold',
+  },
+  liveQuizCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F5F5F5',
+    borderRadius: 10,
+    padding: 10,
+    marginBottom: 10,
+  },
+  liveQuizIcon: {
+    width: 40,
+    height: 40,
+    marginRight: 10,
+  },
+  liveQuizInfo: {
+    flex: 1,
+  },
+  liveQuizName: {
+    fontSize: 16,
+    color: '#333',
+    fontWeight: 'bold',
+  },
+  liveQuizDetail: {
+    fontSize: 14,
+    color: '#666',
   },
 });

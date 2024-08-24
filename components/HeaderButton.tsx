@@ -3,7 +3,7 @@ import { forwardRef } from 'react';
 import { Pressable, StyleSheet, View, Text, Image, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
-export const CustomHeader = () => {
+export const CustomHeaderHome = () => {
   const navigation = useNavigation() as any;
 
   const handleAvatarPress = () => {

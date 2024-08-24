@@ -1,7 +1,8 @@
+import React from 'react';
 import { Link, Tabs } from 'expo-router';
-
-import { CustomHeader, HeaderButton } from '../../components/HeaderButton';
+import CustomHeaderProfile from '../../components/CustomHeader';
 import { TabBarIcon } from '../../components/TabBarIcon';
+import { CustomHeaderHome, HeaderButton } from '~/components/HeaderButton';
 
 export default function TabLayout() {
   return (
@@ -16,7 +17,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          header: () => <CustomHeader />,
+          header: () => <CustomHeaderHome />,
           title: 'Home',
           tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
           headerRight: () => (
@@ -26,11 +27,19 @@ export default function TabLayout() {
           ),
         }}
       />
-
       <Tabs.Screen
-        name="two"
+        name="profile"
         options={{
-          title: 'Tab Two',
+          header: () => <CustomHeaderProfile />,
+          title: 'Profile',
+          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="highscores"
+        options={{
+          header: () => <CustomHeaderProfile />,
+          title: 'Highscores',
           tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
         }}
       />
