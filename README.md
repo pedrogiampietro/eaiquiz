@@ -13,11 +13,6 @@
 - **Pontuação ao Vivo**: Veja quem está na frente à medida que cada pergunta é respondida.
 - **Modal de Resultados**: No final de cada jogo, um modal de resultados mostra quem ganhou, exibindo uma animação Lottie se você ganhar.
 
-<!-- ## 📸 Capturas de Tela
-
-![Quiz Screen](./assets/quiz-screen.png)
-![Result Modal](./assets/result-modal.png) -->
-
 ## 🛠️ Tecnologias Utilizadas
 
 - **React Native**: Framework principal para desenvolvimento de aplicativos móveis.
@@ -29,38 +24,38 @@
 
 1. **Clone o Repositório**
 
-   \`\`\`bash
+   ```bash
    git clone https://github.com/pedrogiampietro/eaiquiz.git
    cd duelquiz-app
-   \`\`\`
+   ```
 
 2. **Instale as Dependências**
 
    Certifique-se de ter o \`npm\` instalado e execute:
 
-   \`\`\`bash
+   ```bash
    npm install
-   \`\`\`
+   ```
 
    Ou, se estiver usando o \`yarn\`:
 
-   \`\`\`bash
+   ```bash
    yarn install
-   \`\`\`
+   ```
 
 3. **Inicie o Projeto**
 
    Com o Expo CLI instalado, execute:
 
-   \`\`\`bash
+   ```bash
    npx expo start
-   \`\`\`
+   ```
 
    Isso abrirá o Expo Developer Tools no navegador. A partir daqui, você pode executar o aplicativo em um emulador ou dispositivo físico.
 
 ## 📂 Estrutura de Pastas
 
-\`\`\`
+```
 /duelquiz-app
 /assets - mask-group-profile.png - win-animation.json - loser.png - trophy.png
 /components - CustomHeader.js
@@ -68,7 +63,7 @@
 App.js
 README.md
 package.json
-\`\`\`
+```
 
 - **/assets**: Contém imagens, ícones e animações usadas no app.
 - **/components**: Componentes reutilizáveis usados em várias partes do app.
