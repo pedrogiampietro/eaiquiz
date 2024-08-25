@@ -1,6 +1,6 @@
 # DuelQuiz App
 
-![DuelQuiz](./github/app-screenshot.png)
+![DuelQuiz](./.github/app-screenshot.png)
 
 ## 🎉 Sobre o Projeto
 
