@@ -101,7 +101,6 @@ const styles = StyleSheet.create({
   backgroundImage: {
     flex: 1,
     resizeMode: 'cover',
-    marginHorizontal: 10,
     justifyContent: 'flex-start',
     alignItems: 'center',
     zIndex: 10,
