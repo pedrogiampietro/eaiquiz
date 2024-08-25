@@ -1,14 +1,18 @@
 import React from 'react';
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
+import { useRouter } from 'expo-router';
 
-const CustomHeader = ({ navigation }: any) => {
+const CustomHeader = () => {
+  const router = useRouter();
+
   return (
     <View style={styles.headerContainer}>
-      <TouchableOpacity onPress={() => navigation.goBack()} style={styles.headerButton}>
+      <TouchableOpacity onPress={() => router.replace('/')} style={styles.headerButton}>
         <FontAwesome name="arrow-left" size={24} color="#fff" />
       </TouchableOpacity>
-      <TouchableOpacity onPress={() => navigation.navigate('Settings')} style={styles.headerButton}>
+
+      <TouchableOpacity onPress={() => {}} style={styles.headerButton}>
         <FontAwesome name="cog" size={24} color="#fff" />
       </TouchableOpacity>
     </View>

@@ -79,17 +79,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#6A5AE0',
   },
   scrollViewContent: {
-    flexGrow: 1,
     paddingBottom: 20,
     backgroundColor: '#6A5AE0',
-    paddingHorizontal: 20,
   },
   container: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 20,
-    paddingTop: 50,
   },
   title: {
     fontSize: 24,

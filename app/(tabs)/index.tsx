@@ -214,6 +214,7 @@ const styles = StyleSheet.create({
     paddingTop: 20,
     paddingBottom: 10,
     marginTop: 20,
+    marginBottom: 60,
     paddingHorizontal: 24,
   },
   liveQuizzesHeader: {

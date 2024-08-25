@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, Tabs } from 'expo-router';
-import { View, TouchableOpacity, StyleSheet } from 'react-native';
+import { TouchableOpacity, StyleSheet } from 'react-native';
 import { FontAwesome, Feather } from '@expo/vector-icons';
 import CustomHeaderProfile from '../../components/CustomHeader';
 import { CustomHeaderHome, HeaderButton } from '~/components/HeaderButton';
@@ -34,7 +34,7 @@ export default function TabLayout() {
           title: 'Home',
           tabBarIcon: ({ color }) => <Feather name="home" size={24} color={color} />,
           headerRight: () => (
-            <Link href="/modal" asChild>
+            <Link href="/duel-quiz" asChild>
               <HeaderButton />
             </Link>
           ),
@@ -54,11 +54,11 @@ export default function TabLayout() {
           header: () => <CustomHeaderProfile />,
           title: 'Create Quiz',
           tabBarIcon: ({ color }) => (
-            <View style={styles.fabButton}>
-              <TouchableOpacity>
+            <Link href="/create-quiz" asChild>
+              <TouchableOpacity style={styles.fabButton}>
                 <FontAwesome name="plus" size={24} color="white" />
               </TouchableOpacity>
-            </View>
+            </Link>
           ),
         }}
       />
@@ -109,7 +109,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     position: 'absolute',
-    bottom: 10, // Adjusts the position of the FAB relative to the tab bar
+    bottom: 10,
     zIndex: 1,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 5 },

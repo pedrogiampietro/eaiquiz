@@ -1,24 +1,27 @@
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { forwardRef } from 'react';
-import { Pressable, StyleSheet, View, Text, Image, TouchableOpacity } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { Pressable, StyleSheet, View, Text, Image } from 'react-native';
 
 export const CustomHeaderHome = () => {
-  const navigation = useNavigation() as any;
-
-  const handleAvatarPress = () => {
-    navigation.navigate('modal');
-  };
-
   return (
     <View style={styles.headerContainer}>
-      <View style={styles.textContainer}>
-        <Text style={styles.greeting}>GOOD MORNING</Text>
-        <Text style={styles.username}>Pedro Giampietro</Text>
-      </View>
-      <TouchableOpacity onPress={handleAvatarPress} style={styles.avatarContainer}>
+      <View style={styles.avatarContainer}>
         <Image source={{ uri: 'https://github.com/pedrogiampietro.png' }} style={styles.avatar} />
-      </TouchableOpacity>
+      </View>
+
+      <View style={styles.centerContainer}>
+        <Text style={styles.username}>Pedro</Text>
+        <View style={styles.levelPointsContainer}>
+          <View style={styles.progressBar}>
+            <View style={styles.progressFill} />
+            <Text style={styles.progressText}>12</Text>
+          </View>
+        </View>
+      </View>
+
+      <View style={styles.pointsContainer}>
+        <Text style={styles.pointsText}>Points 231</Text>
+      </View>
     </View>
   );
 };
@@ -54,24 +57,11 @@ export const styles = StyleSheet.create({
     padding: 10,
     paddingTop: 40,
   },
-  textContainer: {
-    flexDirection: 'column',
-    padding: 24,
-  },
-  greeting: {
-    color: '#D3D3D3',
-    fontSize: 12,
-  },
-  username: {
-    color: 'white',
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
   avatarContainer: {
     width: 60,
     height: 60,
     borderRadius: 50,
-    backgroundColor: '#BF83FF',
+    backgroundColor: '#A9ADF3',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -79,6 +69,50 @@ export const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 50,
+  },
+  centerContainer: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  username: {
+    color: 'white',
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 8,
+  },
+  levelPointsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  progressBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    overflow: 'hidden',
+    width: 100,
+    height: 20,
+    position: 'relative',
+  },
+  progressFill: {
+    backgroundColor: '#A9ADF3',
+    width: '50%',
+    height: '100%',
+  },
+  progressText: {
+    position: 'absolute',
+    left: '50%',
+    transform: [{ translateX: -10 }],
+    color: '#000',
+    fontWeight: 'bold',
+  },
+  pointsContainer: {
+    alignItems: 'flex-end',
+  },
+  pointsText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
   headerRight: {
     marginRight: 15,

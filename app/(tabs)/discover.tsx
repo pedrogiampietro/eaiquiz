@@ -1,112 +1,155 @@
-import React from 'react';
-import { StyleSheet, View, Text, Image, ScrollView, ImageBackground } from 'react-native';
-
-const podiumImage = require('../../assets/podium.png');
-const kingIcon = require('../../assets/king-icon.png');
-const backgroundO = require('../../assets/(O).png');
-const crownIcon = require('../../assets/medals/crown-medal.png');
-const silverMedalIcon = require('../../assets/medals/silver-medal.png');
-const bronzeMedalIcon = require('../../assets/medals/bronze-medal.png');
-
-const getFlagUri = (countryCode: string) => `https://flagcdn.com/w20/${countryCode}.png`;
+import React, { useState, useEffect } from 'react';
+import {
+  StyleSheet,
+  View,
+  Text,
+  ScrollView,
+  TextInput,
+  TouchableOpacity,
+  Image,
+  Modal,
+  ActivityIndicator,
+} from 'react-native';
+import { FontAwesome } from '@expo/vector-icons';
+import { useRouter, useFocusEffect } from 'expo-router';
 
 export default function Discover() {
+  const router = useRouter();
+  const [modalVisible, setModalVisible] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
+
+  // useFocusEffect é usado para resetar o estado sempre que a tela estiver focada
+  useFocusEffect(
+    React.useCallback(() => {
+      setModalVisible(false);
+      setIsSearching(false);
+    }, [])
+  );
+
+  const handleQuizSelection = () => {
+    setModalVisible(true); // Abrir o modal
+    setIsSearching(true);
+
+    // Simulação de "buscar oponente"
+    setTimeout(() => {
+      setIsSearching(false);
+      router.push('/duel-quiz'); // Navegar para a tela DuelQuiz
+    }, 10000); // 10 segundos de espera
+  };
+
   return (
     <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollViewContent}>
       <View style={styles.container}>
-        {/* Tabs */}
-        <View style={styles.tabsContainer}>
-          <Text style={styles.tabActive}>Weekly</Text>
-          <Text style={styles.tabInactive}>All Time</Text>
-        </View>
-
-        {/* Highlight Box */}
-        <View style={styles.highlightBox}>
-          <Text style={styles.highlightText}>#4</Text>
-          <Text style={styles.highlightSubtext}>
-            You are doing better than 60% of other players!
-          </Text>
-        </View>
-
-        {/* Podium with Leaderboard */}
-        <View style={styles.podiumContainer}>
-          <ImageBackground source={backgroundO} style={styles.backgroundO}>
-            <ImageBackground source={podiumImage} style={styles.podiumImage}>
-              {/* Player 1 - Center */}
-              <View style={[styles.playerPosition, styles.firstPlace]}>
-                <Image
-                  source={{ uri: 'https://github.com/pedrogiampietro.png' }}
-                  style={styles.playerImage}
-                />
-                <Image source={kingIcon} style={styles.kingIcon} />
-                <Text style={styles.playerName}>Pedro</Text>
-                <View style={styles.badge}>
-                  <Text style={styles.badgeText}>2,569 QP</Text>
-                </View>
-              </View>
-
-              {/* Player 2 - Left */}
-              <View style={[styles.playerPosition, styles.secondPlace]}>
-                <Image
-                  source={{ uri: 'https://github.com/pedrogiampietro.png' }}
-                  style={styles.playerImage}
-                />
-                <Text style={styles.playerName}>Pedro</Text>
-                <View style={styles.badge}>
-                  <Text style={styles.badgeText}>1,469 QP</Text>
-                </View>
-              </View>
-
-              {/* Player 3 - Right */}
-              <View style={[styles.playerPosition, styles.thirdPlace]}>
-                <Image
-                  source={{ uri: 'https://github.com/pedrogiampietro.png' }}
-                  style={styles.playerImage}
-                />
-                <Text style={styles.playerName}>Pedro</Text>
-                <View style={styles.badge}>
-                  <Text style={styles.badgeText}>1,053 QP</Text>
-                </View>
-              </View>
-            </ImageBackground>
-          </ImageBackground>
-        </View>
-      </View>
-
-      <View style={styles.playersList}>
-        {[
-          { rank: 1, name: 'Madelyn Dias', points: '590 points', country: 'br' },
-          { rank: 2, name: 'Madelyn Dias', points: '590 points', country: 'pt' },
-          { rank: 3, name: 'Madelyn Dias', points: '590 points', country: 'in' },
-          { rank: 4, name: 'Madelyn Dias', points: '590 points', country: 'in' },
-          { rank: 5, name: 'Zain Vaccaro', points: '448 points', country: 'it' },
-          { rank: 6, name: 'Skylar Geidt', points: '410 points', country: 'fr' },
-        ].map((player, index) => (
-          <View key={index} style={styles.playerCard}>
-            <View style={styles.rankContainer}>
-              <View style={styles.rankCircle}>
-                <Text style={styles.playerRank}>{player.rank}</Text>
-              </View>
-            </View>
-            <View style={styles.avatarContainer}>
-              <Image
-                source={{ uri: 'https://github.com/pedrogiampietro.png' }}
-                style={styles.playerAvatar}
-              />
-              <Image
-                source={{ uri: getFlagUri(player.country) }}
-                style={styles.playerCountryIcon}
-              />
-            </View>
-            <View style={styles.playerInfoContainer}>
-              <Text style={styles.playerListName}>{player.name}</Text>
-              <Text style={styles.playerListPoints}>{player.points}</Text>
-            </View>
-            {player.rank === 1 && <Image source={crownIcon} style={styles.medalIcon} />}
-            {player.rank === 2 && <Image source={silverMedalIcon} style={styles.medalIcon} />}
-            {player.rank === 3 && <Image source={bronzeMedalIcon} style={styles.medalIcon} />}
+        <View style={styles.mainCard}>
+          {/* Search Bar */}
+          <View style={styles.searchContainer}>
+            <FontAwesome name="search" style={styles.searchIcon} />
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Search"
+              placeholderTextColor="#6A5AE0"
+            />
           </View>
-        ))}
+
+          {/* Tabs */}
+          <View style={styles.tabsContainer}>
+            <TouchableOpacity style={styles.tabButton}>
+              <Text style={styles.tabText}>Top</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.tabButton}>
+              <Text style={styles.tabText}>Quiz</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.tabButton}>
+              <Text style={styles.tabText}>Categories</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.tabButton}>
+              <Text style={styles.tabText}>Friends</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Quiz Section */}
+          <View style={styles.sectionContainer}>
+            <Text style={styles.sectionTitle}>Quiz</Text>
+            <TouchableOpacity onPress={() => {}}>
+              <Text style={styles.seeAllText}>See all</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.quizContainer}>
+            <TouchableOpacity onPress={handleQuizSelection} style={styles.quizCard}>
+              {/* Adicionado onPress */}
+              <Image style={styles.quizIcon} source={require('../../assets/live-quiz-icon.png')} />
+              <View>
+                <Text style={styles.quizTitle}>Statistics Math Quiz</Text>
+                <Text style={styles.quizSubtitle}>Math • 12 Quizzes</Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={handleQuizSelection} style={styles.quizCard}>
+              {/* Adicionado onPress */}
+              <Image style={styles.quizIcon} source={require('../../assets/live-quiz-icon.png')} />
+              <View>
+                <Text style={styles.quizTitle}>Matrices Quiz</Text>
+                <Text style={styles.quizSubtitle}>Math • 6 Quizzes</Text>
+              </View>
+            </TouchableOpacity>
+          </View>
+
+          {/* Friends Section */}
+          <View style={styles.sectionContainer}>
+            <Text style={styles.sectionTitle}>Friends</Text>
+          </View>
+          <View style={styles.friendsContainer}>
+            <View style={styles.friendCard}>
+              <Image
+                style={styles.friendAvatar}
+                source={{ uri: 'https://github.com/pedrogiampietro.png' }}
+              />
+              <View>
+                <Text style={styles.friendName}>Maren Workman</Text>
+                <Text style={styles.friendPoints}>325 points</Text>
+              </View>
+            </View>
+            <View style={styles.friendCard}>
+              <Image
+                style={styles.friendAvatar}
+                source={{ uri: 'https://github.com/pedrogiampietro.png' }}
+              />
+              <View>
+                <Text style={styles.friendName}>Brandon Matrovs</Text>
+                <Text style={styles.friendPoints}>124 points</Text>
+              </View>
+            </View>
+            <View style={styles.friendCard}>
+              <Image
+                style={styles.friendAvatar}
+                source={{ uri: 'https://github.com/pedrogiampietro.png' }}
+              />
+              <View>
+                <Text style={styles.friendName}>Manuela Lipshutz</Text>
+                <Text style={styles.friendPoints}>437 points</Text>
+              </View>
+            </View>
+          </View>
+
+          {/* Modal para buscar oponente */}
+          <Modal
+            transparent={true}
+            animationType="slide"
+            visible={modalVisible}
+            onRequestClose={() => setModalVisible(false)}>
+            <View style={styles.modalOverlay}>
+              <View style={styles.modalContent}>
+                {isSearching ? (
+                  <>
+                    <Text style={styles.modalText}>Buscando oponente...</Text>
+                    <ActivityIndicator size="large" color="#6A5AE0" />
+                  </>
+                ) : (
+                  <Text style={styles.modalText}>Oponente encontrado!</Text>
+                )}
+              </View>
+            </View>
+          </Modal>
+        </View>
       </View>
     </ScrollView>
   );
@@ -120,181 +163,136 @@ const styles = StyleSheet.create({
   scrollViewContent: {
     flexGrow: 1,
     paddingBottom: 20,
-    backgroundColor: '#6A5AE0',
   },
   container: {
+    flex: 1,
     backgroundColor: '#6A5AE0',
+    paddingHorizontal: 10,
+  },
+  mainCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 20,
     paddingHorizontal: 20,
+    paddingVertical: 30,
+    marginVertical: 10,
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    width: 300,
+    padding: 20,
+    backgroundColor: '#ffffff',
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  modalText: {
+    fontSize: 18,
+    marginBottom: 10,
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 20,
+    position: 'relative',
+  },
+  searchIcon: {
+    position: 'absolute',
+    left: 15,
+    fontSize: 20,
+    color: '#6A5AE0',
+  },
+  searchInput: {
+    flex: 1,
+    backgroundColor: '#ffffff',
+    borderRadius: 20,
+    padding: 10,
+    paddingLeft: 40,
+    fontSize: 16,
+    color: '#6A5AE0',
+    borderColor: '#E5E5E5',
+    borderWidth: 1,
   },
   tabsContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginBottom: 10,
+    justifyContent: 'space-between',
+    marginBottom: 20,
   },
-  tabActive: {
+  tabButton: {
+    paddingVertical: 10,
+  },
+  tabText: {
+    fontSize: 16,
+    color: '#000000',
+  },
+  sectionContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  seeAllText: {
+    fontSize: 14,
+    color: '#6A5AE0',
+  },
+  quizContainer: {
+    marginTop: 10,
+  },
+  quizCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 15,
+    backgroundColor: '#ffffff',
+    borderRadius: 15,
+    marginBottom: 10,
+    borderColor: '#E5E5E5',
+    borderWidth: 1,
+  },
+  quizIcon: {
+    width: 40,
+    height: 40,
+    marginRight: 10,
+  },
+  quizTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#FFF',
-    backgroundColor: '#6A5AE0',
-    padding: 10,
+  },
+  quizSubtitle: {
+    fontSize: 14,
+    color: '#777777',
+  },
+  friendsContainer: {
+    marginTop: 10,
+  },
+  friendCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 15,
+    backgroundColor: '#ffffff',
+    borderRadius: 15,
+    marginBottom: 10,
+    borderColor: '#E5E5E5',
+    borderWidth: 1,
+  },
+  friendAvatar: {
+    width: 40,
+    height: 40,
     borderRadius: 20,
-  },
-  tabInactive: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#6A5AE0',
-    padding: 10,
-  },
-  highlightBox: {
-    backgroundColor: '#FFA500',
-    padding: 20,
-    borderRadius: 15,
-    marginBottom: 10,
-  },
-  highlightText: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#FFF',
-    marginBottom: 5,
-  },
-  highlightSubtext: {
-    fontSize: 16,
-    color: '#FFF',
-  },
-  podiumContainer: {
-    alignItems: 'center',
-    marginVertical: 40,
-  },
-  backgroundO: {
-    width: 300,
-    height: 300,
-    justifyContent: 'center',
-    alignItems: 'center',
-    position: 'relative',
-  },
-  podiumImage: {
-    width: '100%',
-    height: '100%',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  playerPosition: {
-    position: 'absolute',
-    alignItems: 'center',
-  },
-  firstPlace: {
-    top: -20,
-    left: '50%',
-    marginLeft: -30,
-  },
-  secondPlace: {
-    bottom: 170,
-    left: 10,
-  },
-  thirdPlace: {
-    bottom: 140,
-    right: 10,
-  },
-  playerImage: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    marginBottom: 5,
-  },
-  kingIcon: {
-    width: 30,
-    height: 30,
-    position: 'absolute',
-    top: -20,
-    left: '50%',
-    marginLeft: -15,
-  },
-  playerName: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#FFF',
-    textAlign: 'center',
-    marginTop: 5,
-  },
-  badge: {
-    backgroundColor: '#FFF',
-    borderRadius: 15,
-    paddingVertical: 5,
-    paddingHorizontal: 10,
-    marginTop: 5,
-  },
-  badgeText: {
-    fontSize: 12,
-    fontWeight: 'bold',
-    color: '#6A5AE0',
-  },
-  playersList: {
-    height: '100%',
-    marginTop: -50,
-    padding: 20,
-    marginHorizontal: 10,
-    borderTopLeftRadius: 30,
-    borderTopRightRadius: 30,
-    backgroundColor: '#C4D0FB',
-  },
-  playerCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFF',
-    borderRadius: 10,
-    padding: 20,
-    marginBottom: 10,
-    height: 90,
-  },
-  rankContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
     marginRight: 10,
   },
-  rankCircle: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    backgroundColor: '#6A5AE0',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  playerRank: {
+  friendName: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#FFF',
   },
-  avatarContainer: {
-    position: 'relative',
-    marginRight: 10,
-  },
-  playerAvatar: {
-    width: 64,
-    height: 64,
-    borderRadius: 50,
-  },
-  playerCountryIcon: {
-    width: 20,
-    height: 20,
-    position: 'absolute',
-    bottom: -2,
-    right: -5,
-  },
-  playerInfoContainer: {
-    flex: 1,
-  },
-  playerListName: {
+  friendPoints: {
     fontSize: 14,
-    fontWeight: 'bold',
-    color: '#333',
-  },
-  playerListPoints: {
-    fontSize: 12,
-    color: '#666',
-  },
-  medalIcon: {
-    width: 42,
-    height: 42,
-    marginLeft: 10,
+    color: '#777777',
   },
 });
