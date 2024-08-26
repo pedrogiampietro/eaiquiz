@@ -1,33 +1,48 @@
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { forwardRef } from 'react';
+import React, { forwardRef } from 'react';
 import { Pressable, StyleSheet, View, Text, Image } from 'react-native';
+import { useAuth } from '../hooks/useAuth';
+
+const extractInitials = (name: string): string => {
+  const nameParts = name.split(' ');
+  return nameParts
+    .map((part) => part.charAt(0))
+    .join('')
+    .toUpperCase();
+};
 
 export const CustomHeaderHome = () => {
+  const { user } = useAuth();
+
   return (
     <View style={styles.headerContainer}>
       <View style={styles.avatarContainer}>
-        <Image source={{ uri: 'https://github.com/pedrogiampietro.png' }} style={styles.avatar} />
+        {user?.profileImage ? (
+          <Image source={{ uri: user.profileImage }} style={styles.avatar} />
+        ) : (
+          <Text style={styles.avatarInitials}>{user?.name ? extractInitials(user.name) : ''}</Text>
+        )}
       </View>
 
       <View style={styles.centerContainer}>
-        <Text style={styles.username}>Pedro</Text>
+        <Text style={styles.username}>{user?.name}</Text>
         <View style={styles.levelPointsContainer}>
           <View style={styles.progressBar}>
             <View style={styles.progressFill} />
-            <Text style={styles.progressText}>12</Text>
+            <Text style={styles.progressText}>{user?.level}</Text>
           </View>
         </View>
       </View>
 
       <View style={styles.pointsContainer}>
-        <Text style={styles.pointsText}>Points 231</Text>
+        <Text style={styles.pointsText}>Points {user?.points}</Text>
       </View>
     </View>
   );
 };
 
 export const HeaderButton = forwardRef<typeof Pressable, { onPress?: () => void }>(
-  ({ onPress }, ref: any) => {
+  ({ onPress }, ref) => {
     return (
       <Pressable onPress={onPress} ref={ref}>
         {({ pressed }) => (
@@ -48,7 +63,7 @@ export const HeaderButton = forwardRef<typeof Pressable, { onPress?: () => void 
   }
 );
 
-export const styles = StyleSheet.create({
+const styles = StyleSheet.create({
   headerContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -69,6 +84,11 @@ export const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 50,
+  },
+  avatarInitials: {
+    color: '#fff',
+    fontSize: 22,
+    fontWeight: 'bold',
   },
   centerContainer: {
     flex: 1,

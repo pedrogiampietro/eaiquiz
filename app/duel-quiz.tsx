@@ -48,7 +48,7 @@ export default function DuelQuiz() {
     return () => clearInterval(interval);
   }, [selectedOption, showResultModal]);
 
-  const handleOptionPress = (option) => {
+  const handleOptionPress = (option: any) => {
     setSelectedOption(option);
     if (option === questions[currentQuestionIndex].answer) {
       setScore(score + 1);
