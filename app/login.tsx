@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from 'hooks/useAuth';
+import axios from 'axios';
 
 export default function Login() {
   const router = useRouter();
@@ -28,10 +29,20 @@ export default function Login() {
       router.push('/(tabs)');
     } catch (err: any) {
       console.error(err);
-      setError(err.message || 'Erro de autenticação');
+
+      if (axios.isAxiosError(err) && err.response) {
+        const serverMessage = err.response.data?.error;
+        setError(serverMessage || 'Erro de autenticação');
+      } else {
+        setError('Erro de autenticação');
+      }
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleFocus = () => {
+    setError('');
   };
 
   return (
@@ -44,6 +55,7 @@ export default function Login() {
           placeholder="Email"
           value={email}
           onChangeText={setEmail}
+          onFocus={handleFocus}
           keyboardType="email-address"
           autoCapitalize="none"
           placeholderTextColor="#aaa"
@@ -53,6 +65,7 @@ export default function Login() {
           placeholder="Senha"
           value={password}
           onChangeText={setPassword}
+          onFocus={handleFocus}
           secureTextEntry
           placeholderTextColor="#aaa"
         />

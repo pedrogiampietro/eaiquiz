@@ -1,13 +1,5 @@
 import { Stack } from 'expo-router';
-import {
-  StyleSheet,
-  View,
-  Text,
-  Image,
-  TouchableOpacity,
-  ScrollView,
-  FlatList,
-} from 'react-native';
+import { StyleSheet, View, Text, Image, TouchableOpacity, FlatList } from 'react-native';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 
 const quizCardImage = require('../../assets/recent-quiz.png');
@@ -22,15 +14,33 @@ const liveQuizzesData = [
   { id: '3', name: 'Integers Quiz', detail: 'Math • 10 Quizzes' },
 ];
 
+const sections = [
+  { type: 'RecentQuiz', key: 'recentQuiz' },
+  { type: 'Featured', key: 'featured' },
+  { type: 'LiveQuizzes', key: 'liveQuizzes' },
+];
+
 export default function Home() {
   return (
     <>
       <Stack.Screen options={{ title: 'Home' }} />
-      <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-        <RecentQuiz />
-        <Featured />
-        <LiveQuizzes />
-      </ScrollView>
+      <FlatList
+        data={sections}
+        keyExtractor={(item) => item.key}
+        renderItem={({ item }) => {
+          switch (item.type) {
+            case 'RecentQuiz':
+              return <RecentQuiz />;
+            case 'Featured':
+              return <Featured />;
+            case 'LiveQuizzes':
+              return <LiveQuizzes />;
+            default:
+              return null;
+          }
+        }}
+        contentContainerStyle={styles.contentContainer}
+      />
     </>
   );
 }
@@ -101,9 +111,11 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     paddingBottom: 20,
+    backgroundColor: '#6A5AE0',
   },
   quizContainer: {
     marginBottom: 20,
+    marginTop: 23,
     paddingHorizontal: 24,
   },
   quizTitle: {
@@ -208,6 +220,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   liveQuizzesContainer: {
+    height: '100%',
     backgroundColor: '#FFF',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,

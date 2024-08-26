@@ -9,7 +9,7 @@ export let baseURL = process.env.REACT_APP_API_URL
   ? process.env.REACT_APP_API_URL.startsWith('https')
     ? `${process.env.REACT_APP_API_URL}`
     : process.env.REACT_APP_API_URL
-  : 'http://192.168.0.71:5000';
+  : 'http://192.168.1.7:5000';
 // 'https://ready-api.vercel.app';
 
 export async function signOut() {

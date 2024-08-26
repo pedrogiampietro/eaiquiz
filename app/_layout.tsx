@@ -1,19 +1,23 @@
-import { Stack } from 'expo-router';
-import { AuthProvider } from 'contexts/AuthContext';
-
-export const unstable_settings = {
-  initialRouteName: 'login',
-};
+import { useAuth } from '~/hooks/useAuth';
+import { AuthProvider } from '../contexts/AuthContext';
+import React from 'react';
+import AuthLayout from './layouts/AuthLayout';
+import MainLayout from './layouts/MainLayout';
 
 export default function RootLayout() {
   return (
     <AuthProvider>
-      <Stack>
-        <Stack.Screen name="login" options={{ headerShown: false }} />
-        <Stack.Screen name="register" options={{ headerShown: false }} />
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="duel-quiz" />
-      </Stack>
+      <ConditionalLayout />
     </AuthProvider>
   );
+}
+
+function ConditionalLayout() {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return null;
+  }
+
+  return user ? <MainLayout /> : <AuthLayout />;
 }

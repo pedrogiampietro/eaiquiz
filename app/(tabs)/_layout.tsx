@@ -49,12 +49,12 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="create-quiz"
+        name="find-battle"
         options={{
           header: () => <CustomHeaderProfile />,
-          title: 'Create Quiz',
+          title: 'Find Battle',
           tabBarIcon: ({ color }) => (
-            <Link href="/create-quiz" asChild>
+            <Link href="/find-battle" asChild>
               <TouchableOpacity style={styles.fabButton}>
                 <FontAwesome name="plus" size={24} color="white" />
               </TouchableOpacity>
