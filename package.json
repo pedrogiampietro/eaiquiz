@@ -12,11 +12,13 @@
     "start:nocache": "expo start -c"
   },
   "dependencies": {
+    "@dotlottie/react-player": "^1.6.19",
     "@expo/vector-icons": "^14.0.0",
     "@react-native-async-storage/async-storage": "1.23.1",
     "@react-native-picker/picker": "^2.7.7",
     "@react-navigation/native": "^6.1.7",
     "@supabase/supabase-js": "^2.38.4",
+    "axios": "^1.7.5",
     "expo": "^51.0.31",
     "expo-constants": "~16.0.1",
     "expo-linking": "~6.3.1",

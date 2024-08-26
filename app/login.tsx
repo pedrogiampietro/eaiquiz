@@ -1,21 +1,44 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ImageBackground } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  ImageBackground,
+  ActivityIndicator,
+} from 'react-native';
 import { useRouter } from 'expo-router';
+import { useAuth } from '../hooks/useAuth';
 
 export default function Login() {
   const router = useRouter();
+  const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleLogin = () => {
-    // Lógica de autenticação aqui
-    console.log('Login com:', email, password);
+  const handleLogin = async () => {
+    setLoading(true);
+    setError('');
+
+    try {
+      await login(email, password);
+      router.push('/(tabs)');
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || 'Erro de autenticação');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <ImageBackground source={require('../assets/mask-group-profile.png')} style={styles.background}>
       <View style={styles.container}>
         <Text style={styles.title}>Bem-vindo de volta!</Text>
+        {error ? <Text style={styles.errorText}>{error}</Text> : null}
         <TextInput
           style={styles.input}
           placeholder="Email"
@@ -33,8 +56,12 @@ export default function Login() {
           secureTextEntry
           placeholderTextColor="#aaa"
         />
-        <TouchableOpacity style={styles.button} onPress={handleLogin}>
-          <Text style={styles.buttonText}>Entrar</Text>
+        <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={loading}>
+          {loading ? (
+            <ActivityIndicator color="#FFF" />
+          ) : (
+            <Text style={styles.buttonText}>Entrar</Text>
+          )}
         </TouchableOpacity>
         <TouchableOpacity onPress={() => router.push('/register')}>
           <Text style={styles.linkText}>Não tem uma conta? Registre-se</Text>
@@ -49,6 +76,8 @@ const styles = StyleSheet.create({
     flex: 1,
     resizeMode: 'cover',
     justifyContent: 'center',
+    width: '100%',
+    height: '100%',
   },
   container: {
     flex: 1,
@@ -74,7 +103,7 @@ const styles = StyleSheet.create({
     color: '#FFF',
   },
   button: {
-    backgroundColor: '#FF7029',
+    backgroundColor: '#6A5AE0',
     padding: 15,
     borderRadius: 8,
     width: '100%',
@@ -86,7 +115,11 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   linkText: {
-    color: '#FF7029',
+    color: '#a499e9',
     marginTop: 20,
+  },
+  errorText: {
+    color: 'red',
+    marginBottom: 10,
   },
 });
