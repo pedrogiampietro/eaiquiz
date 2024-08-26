@@ -10,11 +10,13 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
+import { apiClient } from '~/services/api';
 
 export default function FindBattle() {
   const router = useRouter();
   const [modalVisible, setModalVisible] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
+  const [_, setSelectedTheme] = useState('');
 
   useFocusEffect(
     React.useCallback(() => {
@@ -23,15 +25,53 @@ export default function FindBattle() {
     }, [])
   );
 
-  const handleCardSelection = () => {
-    setModalVisible(true); // Abrir o modal
+  const handleCardSelection = async (theme: string) => {
+    setSelectedTheme(theme);
+    setModalVisible(true);
     setIsSearching(true);
 
-    // Simulação de "buscar oponente"
-    setTimeout(() => {
+    try {
+      const api = await apiClient();
+
+      const existingQuizResponse = await api.get('/quizzes', {
+        params: { theme },
+      });
+
+      let quizId;
+      let gameSessionId;
+
+      if (existingQuizResponse.data.length > 0) {
+        quizId = existingQuizResponse.data[0].id;
+      } else {
+        const quizResponse = await api.post('/quizzes/generate', {
+          theme,
+          creatorId: 1,
+        });
+
+        console.log('Quiz generated:', quizResponse.data);
+        quizId = quizResponse.data.quiz.id;
+      }
+
+      const sessionResponse = await api.post('/games/sessions', {
+        theme,
+        quizId,
+        userId: 1,
+        isRealTime: false,
+      });
+
+      console.log('Game session:', sessionResponse.data);
+      gameSessionId = sessionResponse.data.gameSession.id;
+
       setIsSearching(false);
-      router.push('/duel-quiz'); // Navegar para a tela DuelQuiz
-    }, 5000); // 5 segundos de espera para simular o matchmaking
+      router.push({
+        pathname: '/duel-quiz',
+        params: { quizId, gameSessionId: Number(gameSessionId) },
+      });
+    } catch (error) {
+      console.error('Error:', error);
+      setIsSearching(false);
+      setModalVisible(false);
+    }
   };
 
   return (
@@ -39,39 +79,51 @@ export default function FindBattle() {
       <View style={styles.container}>
         <Text style={styles.title}>Escolha um tema para a batalha</Text>
 
-        {/* Cards de Temas */}
+        {/* Theme Cards */}
         <View style={styles.cardsContainer}>
-          <TouchableOpacity onPress={handleCardSelection} style={styles.card}>
+          <TouchableOpacity
+            onPress={() => handleCardSelection('biologia e ciencias')}
+            style={styles.card}>
             <Image
               style={styles.cardImage}
               source={require('../../assets/cards/biologia-ciencias.png')}
             />
           </TouchableOpacity>
-          <TouchableOpacity onPress={handleCardSelection} style={styles.card}>
+          <TouchableOpacity
+            onPress={() => handleCardSelection('cinema e arte')}
+            style={styles.card}>
             <Image
               style={styles.cardImage}
               source={require('../../assets/cards/cinema-arte.png')}
             />
           </TouchableOpacity>
-          <TouchableOpacity onPress={handleCardSelection} style={styles.card}>
+          <TouchableOpacity
+            onPress={() => handleCardSelection('jogos e tecnologia')}
+            style={styles.card}>
             <Image
               style={styles.cardImage}
               source={require('../../assets/cards/jogos-tecnologia.png')}
             />
           </TouchableOpacity>
-          <TouchableOpacity onPress={handleCardSelection} style={styles.card}>
+          <TouchableOpacity
+            onPress={() => handleCardSelection('matematica e outros')}
+            style={styles.card}>
             <Image
               style={styles.cardImage}
               source={require('../../assets/cards/matematica-fisica.png')}
             />
           </TouchableOpacity>
-          <TouchableOpacity onPress={handleCardSelection} style={styles.card}>
+          <TouchableOpacity
+            onPress={() => handleCardSelection('historia e geografia')}
+            style={styles.card}>
             <Image
               style={styles.cardImage}
               source={require('../../assets/cards/historia-geografia.png')}
             />
           </TouchableOpacity>
-          <TouchableOpacity onPress={handleCardSelection} style={styles.card}>
+          <TouchableOpacity
+            onPress={() => handleCardSelection('linguas e literatura')}
+            style={styles.card}>
             <Image
               style={styles.cardImage}
               source={require('../../assets/cards/linguas-literatura.png')}
@@ -79,7 +131,7 @@ export default function FindBattle() {
           </TouchableOpacity>
         </View>
 
-        {/* Modal para buscar oponente */}
+        {/* Modal for finding opponent */}
         <Modal
           transparent={true}
           animationType="slide"

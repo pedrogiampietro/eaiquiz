@@ -1,69 +1,107 @@
 import React, { useState, useEffect } from 'react';
-import {
-  StyleSheet,
-  View,
-  Text,
-  TouchableOpacity,
-  ImageBackground,
-  Modal,
-  Image,
-} from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, ImageBackground, Modal } from 'react-native';
 import LottieView from 'lottie-react-native';
-
-const questions = [
-  {
-    question: 'What is the capital of France?',
-    options: ['Berlin', 'Madrid', 'Paris', 'Rome'],
-    answer: 'Paris',
-  },
-  {
-    question: 'What is the capital of France?',
-    options: ['Berlin', 'Madrid', 'Paris', 'Rome'],
-    answer: 'Paris',
-  },
-  // Adicione mais perguntas aqui
-];
+import { useRouter, useLocalSearchParams } from 'expo-router';
+import { apiClient } from '~/services/api';
 
 export default function DuelQuiz() {
+  const [questions, setQuestions] = useState([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedOption, setSelectedOption] = useState(null);
   const [score, setScore] = useState(0);
-  const [opponentScore, setOpponentScore] = useState(0); // Pontuação aleatória ou buscada de um servidor
-  const [timer, setTimer] = useState(10); // Definindo o tempo do cronômetro
-  const [showResultModal, setShowResultModal] = useState(false); // Estado para controlar a exibição do modal de resultado
+  const [opponentScore, setOpponentScore] = useState(null);
+  const [opponentStatus, setOpponentStatus] = useState('pending');
+  const [timer, setTimer] = useState(10);
+  const [showResultModal, setShowResultModal] = useState(false);
+
+  const { quizId, gameSessionId } = useLocalSearchParams();
+  const userId = 1;
+
+  useEffect(() => {
+    const fetchQuestions = async () => {
+      if (!quizId) return;
+
+      try {
+        const api = await apiClient();
+        const response = await api.get(`/quizzes/${quizId}`);
+        setQuestions(response.data.questions);
+      } catch (error) {
+        console.error('Error fetching questions:', error);
+      }
+    };
+
+    fetchQuestions();
+  }, [quizId]);
 
   useEffect(() => {
     if (timer === 0) {
-      handleNextQuestion(); // Avançar para a próxima pergunta se o cronômetro chegar a 0
+      handleNextQuestion();
     }
   }, [timer]);
 
   useEffect(() => {
     const interval = setInterval(() => {
       if (selectedOption === null && !showResultModal) {
-        setTimer((prev) => prev - 1); // Diminuir o cronômetro a cada segundo
+        setTimer((prev) => prev - 1);
       }
     }, 1000);
 
     return () => clearInterval(interval);
   }, [selectedOption, showResultModal]);
 
-  const handleOptionPress = (option: any) => {
-    setSelectedOption(option);
-    if (option === questions[currentQuestionIndex].answer) {
-      setScore(score + 1);
+  useEffect(() => {
+    const fetchGameSessionDetails = async () => {
+      try {
+        const api = await apiClient();
+        const response = await api.get(`/games/sessions/${gameSessionId}`);
+
+        const playerTurns = response.data.gameTurns.filter((turn) => turn.playerId === userId);
+        const opponentTurns = response.data.gameTurns.filter((turn) => turn.playerId !== userId);
+
+        setScore(playerTurns.filter((turn) => turn.isCorrect).length);
+
+        if (opponentTurns.length > 0) {
+          setOpponentScore(opponentTurns.filter((turn) => turn.isCorrect).length);
+          setOpponentStatus('completed');
+        } else {
+          setOpponentStatus('pending');
+        }
+      } catch (error) {
+        console.error('Error fetching game session details:', error);
+      }
+    };
+
+    if (showResultModal) {
+      fetchGameSessionDetails();
     }
-    // Simulação da pontuação do oponente (para demonstração)
-    setOpponentScore(opponentScore + Math.floor(Math.random() * 2)); // Random 0 ou 1
+  }, [showResultModal]);
+
+  const handleOptionPress = async (option) => {
+    setSelectedOption(option);
+
+    try {
+      const api = await apiClient();
+      const response = await api.post('/games/submit', {
+        gameSessionId: Number(gameSessionId),
+        userId: userId,
+        questionId: questions[currentQuestionIndex].id,
+        answerId: option.id,
+      });
+
+      if (response.data.isCorrect) {
+        setScore(score + 1);
+      }
+    } catch (error) {
+      console.error('Error submitting answer:', error);
+    }
   };
 
   const handleNextQuestion = () => {
     if (currentQuestionIndex < questions.length - 1) {
       setSelectedOption(null);
-      setTimer(10); // Resetar o cronômetro para 10 segundos
+      setTimer(10);
       setCurrentQuestionIndex(currentQuestionIndex + 1);
     } else {
-      // Todas as perguntas foram respondidas, mostrar o modal de resultado
       endQuiz();
     }
   };
@@ -73,7 +111,6 @@ export default function DuelQuiz() {
   };
 
   useEffect(() => {
-    // Mover automaticamente para a próxima pergunta após um atraso
     if (selectedOption !== null) {
       const timer = setTimeout(handleNextQuestion, 2000);
       return () => clearTimeout(timer);
@@ -83,7 +120,6 @@ export default function DuelQuiz() {
   return (
     <ImageBackground source={require('../assets/mask-group-profile.png')} style={styles.background}>
       <View style={styles.overlay}>
-        {/* Contador de perguntas e cronômetro */}
         <View style={styles.topContainer}>
           <Text style={styles.questionCounter}>
             {currentQuestionIndex + 1}/{questions.length}
@@ -91,20 +127,19 @@ export default function DuelQuiz() {
           <Text style={styles.timer}>Tempo: {timer}s</Text>
         </View>
 
-        <Text style={styles.question}>{questions[currentQuestionIndex].question}</Text>
+        <Text style={styles.question}>{questions[currentQuestionIndex]?.content}</Text>
         <View style={styles.optionsContainer}>
-          {questions[currentQuestionIndex].options.map((option, index) => (
+          {questions[currentQuestionIndex]?.answers.map((option, index) => (
             <TouchableOpacity
               key={index}
               style={[styles.optionButton, selectedOption === option && styles.selectedOption]}
               onPress={() => handleOptionPress(option)}
               disabled={selectedOption !== null}>
-              <Text style={styles.optionText}>{option}</Text>
+              <Text style={styles.optionText}>{option.content}</Text>
             </TouchableOpacity>
           ))}
         </View>
 
-        {/* Modal de resultado */}
         <Modal
           visible={showResultModal}
           transparent={true}
@@ -112,7 +147,9 @@ export default function DuelQuiz() {
           onRequestClose={() => setShowResultModal(false)}>
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
-              {score > opponentScore ? (
+              {opponentStatus === 'pending' ? (
+                <Text style={styles.modalText}>Waiting for opponent to finish...</Text>
+              ) : score > opponentScore ? (
                 <>
                   <Text style={styles.modalTitle}>Congrats!</Text>
                   <LottieView
@@ -125,16 +162,18 @@ export default function DuelQuiz() {
               ) : (
                 <>
                   <Text style={styles.modalTitle}>Better Luck Next Time!</Text>
-                  {/* <Image source={require('../assets/loser.png')} style={styles.modalImage} /> */}
                 </>
               )}
               <Text style={styles.modalScore}>Your Score: {score}</Text>
-              <Text style={styles.modalScore}>Opponent's Score: {opponentScore}</Text>
+              <Text style={styles.modalScore}>
+                Opponent's Score: {opponentScore !== null ? opponentScore : 'Pending'}
+              </Text>
               <Text style={styles.modalText}>
                 You answered {score} out of {questions.length} correctly.
               </Text>
               <Text style={styles.modalText}>
-                Your opponent answered {opponentScore} out of {questions.length} correctly.
+                Your opponent answered {opponentScore !== null ? opponentScore : 'pending'} out of{' '}
+                {questions.length} correctly.
               </Text>
               <TouchableOpacity
                 style={styles.closeButton}
@@ -156,7 +195,7 @@ const styles = StyleSheet.create({
   },
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Fundo semi-transparente para destacar o conteúdo
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     padding: 20,
     justifyContent: 'center',
   },
@@ -193,7 +232,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   selectedOption: {
-    backgroundColor: '#ffeb3b', // Destaque para a opção selecionada
+    backgroundColor: '#ffeb3b',
   },
   optionText: {
     fontSize: 18,
@@ -229,11 +268,6 @@ const styles = StyleSheet.create({
     color: '#555',
     textAlign: 'center',
     marginBottom: 10,
-  },
-  modalImage: {
-    width: 100,
-    height: 100,
-    marginBottom: 20,
   },
   lottie: {
     width: 150,
