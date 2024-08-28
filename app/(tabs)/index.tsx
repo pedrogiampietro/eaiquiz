@@ -52,7 +52,6 @@ export default function Home() {
       if (existingQuizResponse.data.quiz) {
         // Utilize o quiz existente
         quizId = existingQuizResponse.data.quiz.id;
-        console.log(`Quiz existente encontrado: ${quizId}`);
       }
 
       // Criar uma nova sessão de jogo ou juntar-se a uma existente
@@ -63,7 +62,6 @@ export default function Home() {
         isRealTime: false,
       });
 
-      console.log('Game session:', sessionResponse.data);
       gameSessionId = sessionResponse.data.gameSession.id;
 
       router.push({
@@ -73,6 +71,10 @@ export default function Home() {
     } catch (error) {
       console.error('Error:', error);
     }
+  };
+
+  const handleFriends = () => {
+    router.push('/friends');
   };
 
   return (
@@ -86,7 +88,7 @@ export default function Home() {
             case 'RecentQuiz':
               return <RecentQuiz />;
             case 'Featured':
-              return <Featured />;
+              return <Featured handleFriends={handleFriends} />;
             case 'RecentQuizzes':
               return <RecentQuizzes quizzes={recentQuizzes} onQuizSelect={handleQuizSelection} />;
             default:
@@ -114,7 +116,7 @@ const RecentQuiz = () => (
   </View>
 );
 
-const Featured = () => (
+const Featured = ({ handleFriends }: any) => (
   <View style={styles.featuredContainer}>
     <Image source={featuredCardImage} style={styles.featuredCardImage} />
     <Image source={topLeftIcon} style={styles.topLeftIcon} />
@@ -122,7 +124,7 @@ const Featured = () => (
     <View style={styles.featuredContent}>
       <Text style={styles.featuredTitle}>FEATURED</Text>
       <Text style={styles.featuredText}>Take part in challenges with friends or other players</Text>
-      <TouchableOpacity style={styles.findFriendsButton}>
+      <TouchableOpacity style={styles.findFriendsButton} onPress={() => handleFriends()}>
         <FontAwesome name="users" size={18} color="#6A5AE0" style={styles.buttonIcon} />
         <Text style={styles.findFriendsText}>Find Friends</Text>
       </TouchableOpacity>

@@ -17,12 +17,14 @@ export default function Discover() {
   const router = useRouter();
   const [modalVisible, setModalVisible] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
+  const [roomCode, setRoomCode] = useState(''); // Estado para armazenar o código da sala
 
   // useFocusEffect é usado para resetar o estado sempre que a tela estiver focada
   useFocusEffect(
     React.useCallback(() => {
       setModalVisible(false);
       setIsSearching(false);
+      setRoomCode(''); // Resetar o código da sala ao focar a tela
     }, [])
   );
 
@@ -37,6 +39,13 @@ export default function Discover() {
     }, 10000); // 10 segundos de espera
   };
 
+  // Função para validar a entrada do usuário
+  const handleRoomCodeChange = (text: string) => {
+    // Apenas permite números e limita a 4 dígitos
+    const validatedCode = text.replace(/[^0-9]/g, '').slice(0, 4);
+    setRoomCode(validatedCode);
+  };
+
   return (
     <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollViewContent}>
       <View style={styles.container}>
@@ -46,25 +55,13 @@ export default function Discover() {
             <FontAwesome name="search" style={styles.searchIcon} />
             <TextInput
               style={styles.searchInput}
-              placeholder="Search"
+              keyboardType="number-pad"
+              placeholder="Digite o código da sala"
               placeholderTextColor="#6A5AE0"
+              maxLength={4} // Limita a entrada a 4 caracteres
+              value={roomCode}
+              onChangeText={handleRoomCodeChange} // Função de validação
             />
-          </View>
-
-          {/* Tabs */}
-          <View style={styles.tabsContainer}>
-            <TouchableOpacity style={styles.tabButton}>
-              <Text style={styles.tabText}>Top</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.tabButton}>
-              <Text style={styles.tabText}>Quiz</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.tabButton}>
-              <Text style={styles.tabText}>Categories</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.tabButton}>
-              <Text style={styles.tabText}>Friends</Text>
-            </TouchableOpacity>
           </View>
 
           {/* Quiz Section */}
@@ -202,8 +199,9 @@ const styles = StyleSheet.create({
   searchIcon: {
     position: 'absolute',
     left: 15,
-    fontSize: 20,
+    fontSize: 16,
     color: '#6A5AE0',
+    zIndex: 20,
   },
   searchInput: {
     flex: 1,
@@ -215,18 +213,6 @@ const styles = StyleSheet.create({
     color: '#6A5AE0',
     borderColor: '#E5E5E5',
     borderWidth: 1,
-  },
-  tabsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 20,
-  },
-  tabButton: {
-    paddingVertical: 10,
-  },
-  tabText: {
-    fontSize: 16,
-    color: '#000000',
   },
   sectionContainer: {
     flexDirection: 'row',

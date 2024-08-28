@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, ImageBackground, Modal } from 'react-native';
 import LottieView from 'lottie-react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -85,11 +85,11 @@ export default function DuelQuiz() {
   useEffect(() => {
     if (showResultModal) {
       updateUser();
-      const timer = setTimeout(() => {
+      const redirectTimer = setTimeout(() => {
         router.push('/(tabs)');
-      }, 3000);
+      }, 1500);
 
-      return () => clearTimeout(timer);
+      return () => clearTimeout(redirectTimer);
     }
   }, [showResultModal, router, updateUser]);
 
@@ -129,8 +129,8 @@ export default function DuelQuiz() {
 
   useEffect(() => {
     if (selectedOption !== null) {
-      const timer = setTimeout(handleNextQuestion, 2000);
-      return () => clearTimeout(timer);
+      const nextQuestionTimer = setTimeout(handleNextQuestion, 2000);
+      return () => clearTimeout(nextQuestionTimer);
     }
   }, [selectedOption]);
 

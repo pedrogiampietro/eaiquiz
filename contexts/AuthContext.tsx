@@ -25,8 +25,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         const refreshToken = await AsyncStorage.getItem('refreshToken@eaiquiz');
         const user = await AsyncStorage.getItem('user@eaiquiz');
 
-        console.log('user', user);
-
         if (token && refreshToken && user) {
           setToken(token);
           setRefreshToken(refreshToken);
