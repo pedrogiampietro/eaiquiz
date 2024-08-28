@@ -8,6 +8,8 @@ export interface User {
   worldRank?: number | null;
   localRank?: number | null;
   createdAt: string;
+  eaiCoins: number;
+  gold: number;
 }
 
 export interface AuthContextType {

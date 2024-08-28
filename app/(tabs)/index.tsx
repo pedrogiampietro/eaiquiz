@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Stack } from 'expo-router';
+import { useRouter, Stack } from 'expo-router';
 import { StyleSheet, View, Text, Image, TouchableOpacity, FlatList } from 'react-native';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { apiClient } from '~/services/api';
+import { useAuth } from '~/hooks/useAuth';
 
 const quizCardImage = require('../../assets/recent-quiz.png');
 const featuredCardImage = require('../../assets/mask-group.png');
@@ -18,6 +19,8 @@ const sections = [
 
 export default function Home() {
   const [recentQuizzes, setRecentQuizzes] = useState([]);
+  const router = useRouter();
+  const { user } = useAuth();
 
   useEffect(() => {
     const fetchRecentQuizzes = async () => {
@@ -34,6 +37,44 @@ export default function Home() {
     fetchRecentQuizzes();
   }, []);
 
+  const handleQuizSelection = async (theme: string) => {
+    try {
+      const api = await apiClient();
+
+      // Verifique se há quizzes existentes
+      const existingQuizResponse = await api.get('/quizzes/getOrCreate', {
+        params: { theme, userId: user?.id },
+      });
+
+      let quizId;
+      let gameSessionId;
+
+      if (existingQuizResponse.data.quiz) {
+        // Utilize o quiz existente
+        quizId = existingQuizResponse.data.quiz.id;
+        console.log(`Quiz existente encontrado: ${quizId}`);
+      }
+
+      // Criar uma nova sessão de jogo ou juntar-se a uma existente
+      const sessionResponse = await api.post('/games/sessions', {
+        theme,
+        quizId,
+        userId: user?.id,
+        isRealTime: false,
+      });
+
+      console.log('Game session:', sessionResponse.data);
+      gameSessionId = sessionResponse.data.gameSession.id;
+
+      router.push({
+        pathname: '/duel-quiz',
+        params: { quizId, gameSessionId: Number(gameSessionId) },
+      });
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
+
   return (
     <>
       <Stack.Screen options={{ title: 'Home' }} />
@@ -47,7 +88,7 @@ export default function Home() {
             case 'Featured':
               return <Featured />;
             case 'RecentQuizzes':
-              return <RecentQuizzes quizzes={recentQuizzes} />; // Passa os quizzes recentes como prop
+              return <RecentQuizzes quizzes={recentQuizzes} onQuizSelect={handleQuizSelection} />;
             default:
               return null;
           }
@@ -89,10 +130,10 @@ const Featured = () => (
   </View>
 );
 
-const RecentQuizzes = ({ quizzes }: any) => (
+const RecentQuizzes = ({ quizzes, onQuizSelect }: any) => (
   <View style={styles.recentQuizzesContainer}>
     <View style={styles.recentQuizzesHeader}>
-      <Text style={styles.recentQuizzesTitle}>Recente Quizes</Text>
+      <Text style={styles.recentQuizzesTitle}>Quizzes Recentes</Text>
       <TouchableOpacity>
         <Text style={styles.seeAllText}>Ver todos</Text>
       </TouchableOpacity>
@@ -102,14 +143,16 @@ const RecentQuizzes = ({ quizzes }: any) => (
       data={quizzes}
       keyExtractor={(item) => item.id.toString()}
       renderItem={({ item }) => (
-        <View style={styles.recentQuizCard}>
-          <Image source={liveQuizIcon} style={styles.liveQuizIcon} />
-          <View style={styles.liveQuizInfo}>
-            <Text style={styles.liveQuizName}>{item.title}</Text>
-            <Text style={styles.liveQuizDetail}>{item.description}</Text>
+        <TouchableOpacity onPress={() => onQuizSelect(item.theme)}>
+          <View style={styles.recentQuizCard}>
+            <Image source={liveQuizIcon} style={styles.liveQuizIcon} />
+            <View style={styles.liveQuizInfo}>
+              <Text style={styles.liveQuizName}>{item.title}</Text>
+              <Text style={styles.liveQuizDetail}>{item.description}</Text>
+            </View>
+            <FontAwesome name="chevron-right" size={18} color="#6A5AE0" />
           </View>
-          <FontAwesome name="chevron-right" size={18} color="#6A5AE0" />
-        </View>
+        </TouchableOpacity>
       )}
     />
   </View>

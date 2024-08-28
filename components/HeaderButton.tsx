@@ -50,14 +50,14 @@ export const CustomHeaderHome = () => {
             source={require('../assets/ui/ui-gem-container.png')}
             style={styles.resourceIcon}
           />
-          <Text style={styles.resourceText}>10</Text>
+          <Text style={styles.resourceText}>{user?.eaiCoins}</Text>
         </View>
         <View style={styles.resourceItem}>
           <Image
             source={require('../assets/ui/ui-gold-container.png')}
             style={styles.resourceIcon}
           />
-          <Text style={styles.resourceText}>934</Text>
+          <Text style={styles.resourceText}>{user?.gold}</Text>
         </View>
       </View>
     </View>

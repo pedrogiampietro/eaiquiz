@@ -8,9 +8,7 @@ import { useAuth } from '~/hooks/useAuth';
 export default function CreateQuiz() {
   const [selectedTheme, setSelectedTheme] = useState('');
   const [quizGenerated, setQuizGenerated] = useState(false);
-  const [quizDetails, setQuizDetails] = useState({ questions: 0, answers: 0 });
   const [loading, setLoading] = useState(false);
-  const [inviteLink, setInviteLink] = useState('');
   const { user } = useAuth();
 
   const themes = ['Harry Potter', 'Lord of the Rings', 'Star Wars', 'Marvel Comics'];
@@ -25,19 +23,12 @@ export default function CreateQuiz() {
 
     try {
       const api = await apiClient();
-      const response = await api.post('/quizzes/start-custom-game', {
+      const response = await api.post('/quizzes/generate', {
         theme: selectedTheme,
         creatorId: user?.id,
       });
 
-      console.log('response', response);
-
       if (response.status === 201) {
-        setQuizDetails({
-          questions: response.data.gameSession.quiz.questions.length,
-          answers: response.data.gameSession.quiz.questions.flatMap((q: any) => q.answers).length,
-        });
-        setInviteLink(response.data.inviteLink);
         setQuizGenerated(true);
       } else if (response.status === 400) {
         Alert.alert('Error', 'Creator ID is required.');
@@ -49,16 +40,6 @@ export default function CreateQuiz() {
       Alert.alert('Error', 'An error occurred while generating the quiz.');
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleShareInvite = async () => {
-    try {
-      await Share.share({
-        message: `Join my quiz on ${selectedTheme}! Click the link to join: ${inviteLink}`,
-      });
-    } catch (error) {
-      Alert.alert('Error', 'Failed to share the invite link.');
     }
   };
 
@@ -91,17 +72,7 @@ export default function CreateQuiz() {
         {quizGenerated && (
           <View style={styles.successMessage}>
             <Text style={styles.successText}>Quiz generated successfully!</Text>
-            <Text style={styles.detailsText}>
-              {quizDetails.questions} questions and {quizDetails.answers} answers created.
-            </Text>
-
-            {/* Share Invite Link */}
-            <TouchableOpacity style={styles.button} onPress={handleShareInvite}>
-              <Text style={styles.buttonText}>Share Invite Link</Text>
-            </TouchableOpacity>
-
-            {/* Display Invite Link */}
-            <Text style={styles.inviteLinkText}>{inviteLink}</Text>
+            <Text style={styles.detailsText}>5 questions and 20 answers created.</Text>
           </View>
         )}
       </View>
@@ -177,11 +148,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#333',
     marginBottom: 20,
-  },
-  inviteLinkText: {
-    fontSize: 14,
-    color: '#6A5AE0',
-    marginTop: 10,
-    textAlign: 'center',
   },
 });
