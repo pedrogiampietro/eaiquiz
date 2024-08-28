@@ -49,12 +49,12 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="find-battle"
+        name="findbattle"
         options={{
           header: () => <CustomHeaderProfile />,
           title: 'Find Battle',
           tabBarIcon: ({ color }) => (
-            <Link href="/find-battle" asChild>
+            <Link href="/findbattle" asChild>
               <TouchableOpacity style={styles.fabButton}>
                 <FontAwesome name="plus" size={24} color="white" />
               </TouchableOpacity>

@@ -1,6 +1,8 @@
+import React, { useEffect, useState } from 'react';
 import { Stack } from 'expo-router';
 import { StyleSheet, View, Text, Image, TouchableOpacity, FlatList } from 'react-native';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
+import { apiClient } from '~/services/api';
 
 const quizCardImage = require('../../assets/recent-quiz.png');
 const featuredCardImage = require('../../assets/mask-group.png');
@@ -8,19 +10,30 @@ const topLeftIcon = require('../../assets/top-left-icon.png');
 const bottomRightIcon = require('../../assets/bottom-right-icon.png');
 const liveQuizIcon = require('../../assets/live-quiz-icon.png');
 
-const liveQuizzesData = [
-  { id: '1', name: 'Statistics Math Quiz', detail: 'Math • 12 Quizzes' },
-  { id: '2', name: 'Integers Quiz', detail: 'Math • 10 Quizzes' },
-  { id: '3', name: 'Integers Quiz', detail: 'Math • 10 Quizzes' },
-];
-
 const sections = [
   { type: 'RecentQuiz', key: 'recentQuiz' },
   { type: 'Featured', key: 'featured' },
-  { type: 'LiveQuizzes', key: 'liveQuizzes' },
+  { type: 'RecentQuizzes', key: 'recentQuizzes' },
 ];
 
 export default function Home() {
+  const [recentQuizzes, setRecentQuizzes] = useState([]);
+
+  useEffect(() => {
+    const fetchRecentQuizzes = async () => {
+      try {
+        const api = await apiClient();
+        const response = await api.get('/quizzes/recent');
+
+        setRecentQuizzes(response.data);
+      } catch (error) {
+        console.error('Erro ao buscar quizzes recentes:', error);
+      }
+    };
+
+    fetchRecentQuizzes();
+  }, []);
+
   return (
     <>
       <Stack.Screen options={{ title: 'Home' }} />
@@ -33,8 +46,8 @@ export default function Home() {
               return <RecentQuiz />;
             case 'Featured':
               return <Featured />;
-            case 'LiveQuizzes':
-              return <LiveQuizzes />;
+            case 'RecentQuizzes':
+              return <RecentQuizzes quizzes={recentQuizzes} />; // Passa os quizzes recentes como prop
             default:
               return null;
           }
@@ -49,7 +62,7 @@ const RecentQuiz = () => (
   <View style={styles.quizContainer}>
     <View style={styles.quizContent}>
       <Image source={quizCardImage} style={styles.quizCardImage} />
-      <Text style={styles.quizTitle}>RECENT QUIZ</Text>
+      <Text style={styles.quizTitle}>Recentes Quizes</Text>
       <View style={styles.quizTextOverlay}>
         <Text style={styles.quizName}>A Basic Music Quiz</Text>
       </View>
@@ -76,24 +89,24 @@ const Featured = () => (
   </View>
 );
 
-const LiveQuizzes = () => (
-  <View style={styles.liveQuizzesContainer}>
-    <View style={styles.liveQuizzesHeader}>
-      <Text style={styles.liveQuizzesTitle}>Live Quizzes</Text>
+const RecentQuizzes = ({ quizzes }: any) => (
+  <View style={styles.recentQuizzesContainer}>
+    <View style={styles.recentQuizzesHeader}>
+      <Text style={styles.recentQuizzesTitle}>Recente Quizes</Text>
       <TouchableOpacity>
-        <Text style={styles.seeAllText}>See all</Text>
+        <Text style={styles.seeAllText}>Ver todos</Text>
       </TouchableOpacity>
     </View>
 
     <FlatList
-      data={liveQuizzesData}
-      keyExtractor={(item) => item.id}
+      data={quizzes}
+      keyExtractor={(item) => item.id.toString()}
       renderItem={({ item }) => (
-        <View style={styles.liveQuizCard}>
+        <View style={styles.recentQuizCard}>
           <Image source={liveQuizIcon} style={styles.liveQuizIcon} />
           <View style={styles.liveQuizInfo}>
-            <Text style={styles.liveQuizName}>{item.name}</Text>
-            <Text style={styles.liveQuizDetail}>{item.detail}</Text>
+            <Text style={styles.liveQuizName}>{item.title}</Text>
+            <Text style={styles.liveQuizDetail}>{item.description}</Text>
           </View>
           <FontAwesome name="chevron-right" size={18} color="#6A5AE0" />
         </View>
@@ -219,7 +232,7 @@ const styles = StyleSheet.create({
     color: '#6A5AE0',
     fontWeight: 'bold',
   },
-  liveQuizzesContainer: {
+  recentQuizzesContainer: {
     height: '100%',
     backgroundColor: '#FFF',
     borderTopLeftRadius: 20,
@@ -230,13 +243,13 @@ const styles = StyleSheet.create({
     marginBottom: 60,
     paddingHorizontal: 24,
   },
-  liveQuizzesHeader: {
+  recentQuizzesHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 10,
   },
-  liveQuizzesTitle: {
+  recentQuizzesTitle: {
     fontSize: 18,
     color: '#333',
     fontWeight: 'bold',
@@ -246,7 +259,7 @@ const styles = StyleSheet.create({
     color: '#6A5AE0',
     fontWeight: 'bold',
   },
-  liveQuizCard: {
+  recentQuizCard: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#F5F5F5',

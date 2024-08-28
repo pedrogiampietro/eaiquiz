@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   StyleSheet,
   View,
@@ -11,12 +11,14 @@ import {
 } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { apiClient } from '~/services/api';
+import { useAuth } from 'hooks/useAuth';
 
 export default function FindBattle() {
   const router = useRouter();
   const [modalVisible, setModalVisible] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
   const [_, setSelectedTheme] = useState('');
+  const { user } = useAuth();
 
   useFocusEffect(
     React.useCallback(() => {
@@ -33,29 +35,34 @@ export default function FindBattle() {
     try {
       const api = await apiClient();
 
-      const existingQuizResponse = await api.get('/quizzes', {
-        params: { theme },
+      // Verifique se há quizzes existentes
+      const existingQuizResponse = await api.get('/quizzes/getOrCreate', {
+        params: { theme, userId: user?.id },
       });
 
       let quizId;
       let gameSessionId;
 
-      if (existingQuizResponse.data.length > 0) {
-        quizId = existingQuizResponse.data[0].id;
+      if (existingQuizResponse.data.quiz) {
+        // Utilize o quiz existente
+        quizId = existingQuizResponse.data.quiz.id;
+        console.log(`Quiz existente encontrado: ${quizId}`);
       } else {
+        // Se não houver quiz existente, gere um novo
         const quizResponse = await api.post('/quizzes/generate', {
           theme,
-          creatorId: 1,
+          creatorId: user?.id,
         });
 
-        console.log('Quiz generated:', quizResponse.data);
+        console.log('Novo quiz gerado:', quizResponse.data);
         quizId = quizResponse.data.quiz.id;
       }
 
+      // Criar uma nova sessão de jogo ou juntar-se a uma existente
       const sessionResponse = await api.post('/games/sessions', {
         theme,
         quizId,
-        userId: 1,
+        userId: user?.id,
         isRealTime: false,
       });
 
@@ -131,6 +138,13 @@ export default function FindBattle() {
           </TouchableOpacity>
         </View>
 
+        <View style={styles.container}>
+          <Text style={styles.title}>Ou crie um tema custom</Text>
+          <TouchableOpacity onPress={() => router.push('/create-quiz')}>
+            <Image source={require('../../assets/create-quiz-card.png')} />
+          </TouchableOpacity>
+        </View>
+
         {/* Modal for finding opponent */}
         <Modal
           transparent={true}
@@ -154,7 +168,6 @@ export default function FindBattle() {
     </ScrollView>
   );
 }
-
 const styles = StyleSheet.create({
   scrollView: {
     flex: 1,

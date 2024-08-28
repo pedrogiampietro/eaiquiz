@@ -1,21 +1,25 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, ImageBackground, Modal } from 'react-native';
 import LottieView from 'lottie-react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { apiClient } from '~/services/api';
+import { apiClient } from 'services/api';
+import { useAuth } from 'hooks/useAuth';
 
 export default function DuelQuiz() {
-  const [questions, setQuestions] = useState([]);
+  const [questions, setQuestions] = useState<any>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedOption, setSelectedOption] = useState(null);
   const [score, setScore] = useState(0);
-  const [opponentScore, setOpponentScore] = useState(null);
+  const [opponentScore, setOpponentScore] = useState<any>(null);
   const [opponentStatus, setOpponentStatus] = useState('pending');
   const [timer, setTimer] = useState(10);
   const [showResultModal, setShowResultModal] = useState(false);
 
   const { quizId, gameSessionId } = useLocalSearchParams();
-  const userId = 1;
+  const router = useRouter();
+  const { user, updateUser } = useAuth();
+
+  const userId = user?.id;
 
   useEffect(() => {
     const fetchQuestions = async () => {
@@ -55,13 +59,15 @@ export default function DuelQuiz() {
         const api = await apiClient();
         const response = await api.get(`/games/sessions/${gameSessionId}`);
 
-        const playerTurns = response.data.gameTurns.filter((turn) => turn.playerId === userId);
-        const opponentTurns = response.data.gameTurns.filter((turn) => turn.playerId !== userId);
+        const playerTurns = response.data.gameTurns.filter((turn: any) => turn.playerId === userId);
+        const opponentTurns = response.data.gameTurns.filter(
+          (turn: any) => turn.playerId !== userId
+        );
 
-        setScore(playerTurns.filter((turn) => turn.isCorrect).length);
+        setScore(playerTurns.filter((turn: any) => turn.isCorrect).length);
 
         if (opponentTurns.length > 0) {
-          setOpponentScore(opponentTurns.filter((turn) => turn.isCorrect).length);
+          setOpponentScore(opponentTurns.filter((turn: any) => turn.isCorrect).length);
           setOpponentStatus('completed');
         } else {
           setOpponentStatus('pending');
@@ -76,7 +82,18 @@ export default function DuelQuiz() {
     }
   }, [showResultModal]);
 
-  const handleOptionPress = async (option) => {
+  useEffect(() => {
+    if (showResultModal) {
+      updateUser();
+      const timer = setTimeout(() => {
+        router.push('/(tabs)');
+      }, 3000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [showResultModal, router, updateUser]);
+
+  const handleOptionPress = async (option: any) => {
     setSelectedOption(option);
 
     try {
@@ -129,7 +146,7 @@ export default function DuelQuiz() {
 
         <Text style={styles.question}>{questions[currentQuestionIndex]?.content}</Text>
         <View style={styles.optionsContainer}>
-          {questions[currentQuestionIndex]?.answers.map((option, index) => (
+          {questions[currentQuestionIndex]?.answers.map((option: any, index: number) => (
             <TouchableOpacity
               key={index}
               style={[styles.optionButton, selectedOption === option && styles.selectedOption]}

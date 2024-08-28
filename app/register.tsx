@@ -1,26 +1,64 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ImageBackground } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  ImageBackground,
+  ToastAndroid,
+} from 'react-native';
 import { useRouter } from 'expo-router';
+import { apiClient } from '~/services/api';
 
 export default function RegisterScreen() {
   const router = useRouter();
   const [email, setEmail] = useState('');
+  const [name, setName] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [loading, setLoading] = useState<boolean>(false);
 
-  const handleRegister = () => {
-    if (password !== confirmPassword) {
-      alert('As senhas não coincidem!');
-      return;
+  const handleRegister = async () => {
+    setLoading(true);
+    try {
+      const api = await apiClient();
+      const response = await api.post('/auth/register', {
+        name,
+        email,
+        password,
+      });
+
+      if (response.status === 201) {
+        ToastAndroid.show('Usuário criado com sucesso!', ToastAndroid.SHORT);
+        router.push('/login');
+      } else {
+        ToastAndroid.show(response.data.message, ToastAndroid.SHORT);
+      }
+    } catch (error) {
+      console.error('Register error:', error);
+      ToastAndroid.show(
+        'Erro ao tentar registrar. Por favor, tente novamente.',
+        ToastAndroid.SHORT
+      );
+    } finally {
+      setLoading(false);
     }
-    // Lógica de registro aqui
-    console.log('Registrando com:', email, password);
   };
 
   return (
     <ImageBackground source={require('../assets/mask-group-profile.png')} style={styles.background}>
       <View style={styles.container}>
         <Text style={styles.title}>Criar Conta</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Nome"
+          value={name}
+          onChangeText={setName}
+          keyboardType="default"
+          autoCapitalize="none"
+          placeholderTextColor="#aaa"
+        />
         <TextInput
           style={styles.input}
           placeholder="Email"

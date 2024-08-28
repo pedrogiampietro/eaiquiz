@@ -1,37 +1,70 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Alert } from 'react-native';
-import { Picker } from '@react-native-picker/picker'; // Import Picker from the new package
+import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Alert, Share } from 'react-native';
+import { Picker } from '@react-native-picker/picker';
+import CustomHeader from 'components/CustomHeader';
+import { apiClient } from '~/services/api';
+import { useAuth } from '~/hooks/useAuth';
 
 export default function CreateQuiz() {
   const [selectedTheme, setSelectedTheme] = useState('');
   const [quizGenerated, setQuizGenerated] = useState(false);
   const [quizDetails, setQuizDetails] = useState({ questions: 0, answers: 0 });
+  const [loading, setLoading] = useState(false);
+  const [inviteLink, setInviteLink] = useState('');
+  const { user } = useAuth();
 
-  const themes = ['Harry Potter', 'Lord of the Rings', 'Star Wars', 'Marvel Comics']; // Example themes
+  const themes = ['Harry Potter', 'Lord of the Rings', 'Star Wars', 'Marvel Comics'];
 
-  const handleGenerateQuiz = () => {
+  const handleGenerateQuiz = async () => {
     if (!selectedTheme) {
       Alert.alert('Please select a theme to generate a quiz.');
       return;
     }
 
-    // Simulate generating a quiz
-    setTimeout(() => {
-      const questions = Math.floor(Math.random() * 10) + 5; // Random questions count
-      const answers = questions * 4; // Assume each question has 4 answers
+    setLoading(true);
 
-      setQuizDetails({ questions, answers });
-      setQuizGenerated(true);
-    }, 1000);
+    try {
+      const api = await apiClient();
+      const response = await api.post('/quizzes/start-custom-game', {
+        theme: selectedTheme,
+        creatorId: user?.id,
+      });
+
+      console.log('response', response);
+
+      if (response.status === 201) {
+        setQuizDetails({
+          questions: response.data.gameSession.quiz.questions.length,
+          answers: response.data.gameSession.quiz.questions.flatMap((q: any) => q.answers).length,
+        });
+        setInviteLink(response.data.inviteLink);
+        setQuizGenerated(true);
+      } else if (response.status === 400) {
+        Alert.alert('Error', 'Creator ID is required.');
+      } else {
+        Alert.alert('Error', 'Failed to generate quiz.');
+      }
+    } catch (error) {
+      console.error('Error generating quiz:', error);
+      Alert.alert('Error', 'An error occurred while generating the quiz.');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleRedirectToQuiz = () => {
-    Alert.alert('Redirecting to the quiz...');
-    // Navigate to the quiz screen here
+  const handleShareInvite = async () => {
+    try {
+      await Share.share({
+        message: `Join my quiz on ${selectedTheme}! Click the link to join: ${inviteLink}`,
+      });
+    } catch (error) {
+      Alert.alert('Error', 'Failed to share the invite link.');
+    }
   };
 
   return (
     <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollViewContent}>
+      <CustomHeader />
       <View style={styles.container}>
         <Text style={styles.title}>Create Quiz</Text>
         <Text style={styles.instructions}>Select a theme to generate your quiz:</Text>
@@ -50,8 +83,8 @@ export default function CreateQuiz() {
         </View>
 
         {/* Generate Quiz Button */}
-        <TouchableOpacity style={styles.button} onPress={handleGenerateQuiz}>
-          <Text style={styles.buttonText}>Generate Quiz</Text>
+        <TouchableOpacity style={styles.button} onPress={handleGenerateQuiz} disabled={loading}>
+          <Text style={styles.buttonText}>{loading ? 'Generating...' : 'Generate Quiz'}</Text>
         </TouchableOpacity>
 
         {/* Success Message */}
@@ -62,10 +95,13 @@ export default function CreateQuiz() {
               {quizDetails.questions} questions and {quizDetails.answers} answers created.
             </Text>
 
-            {/* Redirect Button */}
-            <TouchableOpacity style={styles.button} onPress={handleRedirectToQuiz}>
-              <Text style={styles.buttonText}>Go to Quiz</Text>
+            {/* Share Invite Link */}
+            <TouchableOpacity style={styles.button} onPress={handleShareInvite}>
+              <Text style={styles.buttonText}>Share Invite Link</Text>
             </TouchableOpacity>
+
+            {/* Display Invite Link */}
+            <Text style={styles.inviteLinkText}>{inviteLink}</Text>
           </View>
         )}
       </View>
@@ -87,6 +123,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 20,
+    marginTop: 90,
   },
   title: {
     fontSize: 24,
@@ -140,5 +177,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#333',
     marginBottom: 20,
+  },
+  inviteLinkText: {
+    fontSize: 14,
+    color: '#6A5AE0',
+    marginTop: 10,
+    textAlign: 'center',
   },
 });

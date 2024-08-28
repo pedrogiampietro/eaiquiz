@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Image, ImageBackground, Text } from 'react-native';
+import { StyleSheet, View, Image, ImageBackground, Text, TouchableOpacity } from 'react-native';
 import { FontAwesome5, MaterialIcons } from '@expo/vector-icons';
 import ProfileTab from 'components/ProfileTab';
 import StatsSection from 'components/StatsSection';
+import { useAuth } from '~/hooks/useAuth';
 
 const maskGroupProfile = require('../../assets/mask-group-profile.png');
 const lockedBadge = require('../../assets/badges/locked-badge.png');
@@ -18,6 +19,8 @@ const badges = [
 
 export default function Profile() {
   const [activeTab, setActiveTab] = useState('Badge');
+
+  const { logout } = useAuth();
 
   const renderContent = () => {
     switch (activeTab) {
@@ -44,6 +47,11 @@ export default function Profile() {
   return (
     <View style={styles.container}>
       <ImageBackground source={maskGroupProfile} style={styles.backgroundImage}>
+        {/* Botão de Logout */}
+        <TouchableOpacity style={styles.logoutButton} onPress={() => logout()}>
+          <MaterialIcons name="logout" size={30} color="#FFF" />
+        </TouchableOpacity>
+
         {/* Card Container */}
         <View style={styles.cardContainer}>
           {/* Profile Image */}
@@ -92,6 +100,7 @@ export default function Profile() {
     </View>
   );
 }
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -104,6 +113,13 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     alignItems: 'center',
     zIndex: 10,
+  },
+  logoutButton: {
+    position: 'absolute',
+    right: 20,
+    backgroundColor: '#6A5AE0',
+    padding: 10,
+    borderRadius: 20,
   },
   cardContainer: {
     width: '90%',
