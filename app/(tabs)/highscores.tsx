@@ -1,5 +1,13 @@
-import React, { useEffect } from 'react';
-import { StyleSheet, View, Text, Image, ScrollView, ImageBackground } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import {
+  StyleSheet,
+  View,
+  Text,
+  Image,
+  ScrollView,
+  ImageBackground,
+  TouchableOpacity,
+} from 'react-native';
 import { apiClient } from '~/services/api';
 
 const podiumImage = require('../../assets/podium.png');
@@ -12,112 +20,107 @@ const bronzeMedalIcon = require('../../assets/medals/bronze-medal.png');
 const getFlagUri = (countryCode: string) => `https://flagcdn.com/w20/${countryCode}.png`;
 
 export default function Highscores() {
-  const [highscores, setHighscores] = React.useState<any>([]);
+  const [highscores, setHighscores] = useState<any>([]);
+  const [activeTab, setActiveTab] = useState<string>('all-time');
 
   useEffect(() => {
     const fetchHighscores = async () => {
       try {
         const api = await apiClient();
-        const response = await api.get('/highscores/all-time');
-
-        console.log('response', response.data);
+        const response = await api.get(`/highscores/${activeTab}`);
         setHighscores(response.data);
       } catch (error) {
         console.error('Error fetching highscores:', error);
       }
     };
     fetchHighscores();
-  }, []);
+  }, [activeTab]);
+
+  const renderPodium = () => {
+    return (
+      <View style={styles.podiumContainer}>
+        <ImageBackground source={backgroundO} style={styles.backgroundO}>
+          <ImageBackground source={podiumImage} style={styles.podiumImage}>
+            {highscores.slice(0, 3).map((player: any, index: number) => (
+              <View
+                key={index}
+                style={[
+                  styles.playerPosition,
+                  index === 0
+                    ? styles.firstPlace
+                    : index === 1
+                      ? styles.secondPlace
+                      : styles.thirdPlace,
+                ]}>
+                <Image
+                  source={{
+                    uri: player.user.profileImage || 'https://github.com/pedrogiampietro.png',
+                  }}
+                  style={styles.playerImage}
+                />
+                {index === 0 && <Image source={kingIcon} style={styles.kingIcon} />}
+                <Text style={styles.playerName}>{player.user.name}</Text>
+                <View style={styles.badge}>
+                  <Text style={styles.badgeText}>{player.points} QP</Text>
+                </View>
+              </View>
+            ))}
+          </ImageBackground>
+        </ImageBackground>
+      </View>
+    );
+  };
 
   return (
     <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollViewContent}>
       <View style={styles.container}>
         {/* Tabs */}
         <View style={styles.tabsContainer}>
-          <Text style={styles.tabActive}>Weekly</Text>
-          <Text style={styles.tabInactive}>All Time</Text>
-        </View>
-
-        {/* Highlight Box */}
-        <View style={styles.highlightBox}>
-          <Text style={styles.highlightText}>#4</Text>
-          <Text style={styles.highlightSubtext}>
-            You are doing better than 60% of other players!
-          </Text>
+          <TouchableOpacity onPress={() => setActiveTab('weekly')}>
+            <Text style={activeTab === 'weekly' ? styles.tabActive : styles.tabInactive}>
+              Weekly
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => setActiveTab('all-time')}>
+            <Text style={activeTab === 'all-time' ? styles.tabActive : styles.tabInactive}>
+              All Time
+            </Text>
+          </TouchableOpacity>
         </View>
 
         {/* Podium with Leaderboard */}
-        <View style={styles.podiumContainer}>
-          <ImageBackground source={backgroundO} style={styles.backgroundO}>
-            <ImageBackground source={podiumImage} style={styles.podiumImage}>
-              {/* Player 1 - Center */}
-              <View style={[styles.playerPosition, styles.firstPlace]}>
-                <Image
-                  source={{ uri: 'https://github.com/pedrogiampietro.png' }}
-                  style={styles.playerImage}
-                />
-                <Image source={kingIcon} style={styles.kingIcon} />
-                <Text style={styles.playerName}>Pedro</Text>
-                <View style={styles.badge}>
-                  <Text style={styles.badgeText}>2,569 QP</Text>
-                </View>
-              </View>
+        {renderPodium()}
 
-              {/* Player 2 - Left */}
-              <View style={[styles.playerPosition, styles.secondPlace]}>
-                <Image
-                  source={{ uri: 'https://github.com/pedrogiampietro.png' }}
-                  style={styles.playerImage}
-                />
-                <Text style={styles.playerName}>Pedro</Text>
-                <View style={styles.badge}>
-                  <Text style={styles.badgeText}>1,469 QP</Text>
+        <View style={styles.playersList}>
+          {highscores.map((player: any, index: number) => (
+            <View key={index} style={styles.playerCard}>
+              <View style={styles.rankContainer}>
+                <View style={styles.rankCircle}>
+                  <Text style={styles.playerRank}>{index + 1}</Text>
                 </View>
               </View>
-
-              {/* Player 3 - Right */}
-              <View style={[styles.playerPosition, styles.thirdPlace]}>
+              <View style={styles.avatarContainer}>
                 <Image
-                  source={{ uri: 'https://github.com/pedrogiampietro.png' }}
-                  style={styles.playerImage}
+                  source={{
+                    uri: player.user.profileImage || 'https://github.com/pedrogiampietro.png',
+                  }}
+                  style={styles.playerAvatar}
                 />
-                <Text style={styles.playerName}>Pedro</Text>
-                <View style={styles.badge}>
-                  <Text style={styles.badgeText}>1,053 QP</Text>
-                </View>
+                <Image
+                  source={{ uri: getFlagUri(player.user.country) }}
+                  style={styles.playerCountryIcon}
+                />
               </View>
-            </ImageBackground>
-          </ImageBackground>
+              <View style={styles.playerInfoContainer}>
+                <Text style={styles.playerListName}>{player.user.name}</Text>
+                <Text style={styles.playerListPoints}>{player.points} QP</Text>
+              </View>
+              {index === 0 && <Image source={crownIcon} style={styles.medalIcon} />}
+              {index === 1 && <Image source={silverMedalIcon} style={styles.medalIcon} />}
+              {index === 2 && <Image source={bronzeMedalIcon} style={styles.medalIcon} />}
+            </View>
+          ))}
         </View>
-      </View>
-
-      <View style={styles.playersList}>
-        {highscores.map((player: any, index: number) => (
-          <View key={index} style={styles.playerCard}>
-            <View style={styles.rankContainer}>
-              <View style={styles.rankCircle}>
-                <Text style={styles.playerRank}>{player.rank}</Text>
-              </View>
-            </View>
-            <View style={styles.avatarContainer}>
-              <Image
-                source={{ uri: 'https://github.com/pedrogiampietro.png' }}
-                style={styles.playerAvatar}
-              />
-              <Image
-                source={{ uri: getFlagUri(player.country) }}
-                style={styles.playerCountryIcon}
-              />
-            </View>
-            <View style={styles.playerInfoContainer}>
-              <Text style={styles.playerListName}>{player.name}</Text>
-              <Text style={styles.playerListPoints}>{player.points}</Text>
-            </View>
-            {player.rank === 1 && <Image source={crownIcon} style={styles.medalIcon} />}
-            {player.rank === 2 && <Image source={silverMedalIcon} style={styles.medalIcon} />}
-            {player.rank === 3 && <Image source={bronzeMedalIcon} style={styles.medalIcon} />}
-          </View>
-        ))}
       </View>
     </ScrollView>
   );
@@ -153,7 +156,7 @@ const styles = StyleSheet.create({
   tabInactive: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#6A5AE0',
+    color: '#b3ade6',
     padding: 10,
   },
   highlightBox: {
