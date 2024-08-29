@@ -70,7 +70,6 @@ const MessagesScreen = () => {
           content: message,
         });
 
-        console.log('Mensagem enviada:', response.data);
         setMessage('');
         // fetchMessages(user?.id, selectedFriend.id);
       } catch (error) {
@@ -98,7 +97,6 @@ const MessagesScreen = () => {
         });
 
         setNewFriendName('');
-        console.log('Solicitação de amizade enviada!');
       } catch (error) {
         console.error('Erro ao enviar solicitação de amizade:', error);
       }

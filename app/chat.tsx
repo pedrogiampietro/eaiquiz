@@ -26,8 +26,6 @@ const ChatScreen = () => {
     try {
       const api = await apiClient();
       const response = await api.get(`/messages/${user.id}/${friendId}`);
-
-      // console.log('response.data.messages:', response.data);
       setMessages(response.data.messages);
     } catch (error) {
       console.error('Erro ao buscar mensagens:', error);

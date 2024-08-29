@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { StyleSheet, View, Text, Image, ScrollView, ImageBackground } from 'react-native';
+import { apiClient } from '~/services/api';
 
 const podiumImage = require('../../assets/podium.png');
 const kingIcon = require('../../assets/king-icon.png');
@@ -11,6 +12,23 @@ const bronzeMedalIcon = require('../../assets/medals/bronze-medal.png');
 const getFlagUri = (countryCode: string) => `https://flagcdn.com/w20/${countryCode}.png`;
 
 export default function Highscores() {
+  const [highscores, setHighscores] = React.useState<any>([]);
+
+  useEffect(() => {
+    const fetchHighscores = async () => {
+      try {
+        const api = await apiClient();
+        const response = await api.get('/highscores/all-time');
+
+        console.log('response', response.data);
+        setHighscores(response.data);
+      } catch (error) {
+        console.error('Error fetching highscores:', error);
+      }
+    };
+    fetchHighscores();
+  }, []);
+
   return (
     <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollViewContent}>
       <View style={styles.container}>
@@ -74,14 +92,7 @@ export default function Highscores() {
       </View>
 
       <View style={styles.playersList}>
-        {[
-          { rank: 1, name: 'Madelyn Dias', points: '590 points', country: 'br' },
-          { rank: 2, name: 'Madelyn Dias', points: '590 points', country: 'pt' },
-          { rank: 3, name: 'Madelyn Dias', points: '590 points', country: 'in' },
-          { rank: 4, name: 'Madelyn Dias', points: '590 points', country: 'in' },
-          { rank: 5, name: 'Zain Vaccaro', points: '448 points', country: 'it' },
-          { rank: 6, name: 'Skylar Geidt', points: '410 points', country: 'fr' },
-        ].map((player, index) => (
+        {highscores.map((player: any, index: number) => (
           <View key={index} style={styles.playerCard}>
             <View style={styles.rankContainer}>
               <View style={styles.rankCircle}>

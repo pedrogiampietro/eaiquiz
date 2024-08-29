@@ -12,34 +12,90 @@ import {
 } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { useRouter, useFocusEffect } from 'expo-router';
+import { apiClient } from '~/services/api';
+import { useAuth } from '~/hooks/useAuth';
 
 export default function Discover() {
   const router = useRouter();
+  const { user } = useAuth();
   const [modalVisible, setModalVisible] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
-  const [roomCode, setRoomCode] = useState(''); // Estado para armazenar o código da sala
+  const [roomCode, setRoomCode] = useState('');
+  const [friendsList, setFriendsList] = useState<any>([]);
+  const [quizzes, setQuizzes] = useState<any>([]);
 
-  // useFocusEffect é usado para resetar o estado sempre que a tela estiver focada
   useFocusEffect(
     React.useCallback(() => {
       setModalVisible(false);
       setIsSearching(false);
-      setRoomCode(''); // Resetar o código da sala ao focar a tela
+      setRoomCode('');
     }, [])
   );
 
-  const handleQuizSelection = () => {
-    setModalVisible(true); // Abrir o modal
-    setIsSearching(true);
+  useEffect(() => {
+    fetchFriendsList();
+  }, []);
 
-    // Simulação de "buscar oponente"
-    setTimeout(() => {
-      setIsSearching(false);
-      router.push('/duel-quiz'); // Navegar para a tela DuelQuiz
-    }, 10000); // 10 segundos de espera
+  const fetchFriendsList = async () => {
+    try {
+      const api = await apiClient();
+      const response = await api.get(`/friends/${user?.id}/friends`);
+      setFriendsList(response.data.friends);
+    } catch (error) {
+      console.error('Erro ao buscar lista de amigos:', error);
+    }
   };
 
-  // Função para validar a entrada do usuário
+  useEffect(() => {
+    fetchCustomQuizzesByUser();
+  }, []);
+
+  const fetchCustomQuizzesByUser = async () => {
+    try {
+      const api = await apiClient();
+      const response = await api.get(`/quizzes/custom/${user?.id}`);
+      console.log('Response:', response.data);
+      setQuizzes(response.data.quizzes);
+    } catch (error) {
+      console.error('Erro ao buscar listagem de quiz customizado:', error);
+    }
+  };
+
+  const handleQuizSelection = async (quizId: number, quizTheme: string) => {
+    setModalVisible(true);
+    setIsSearching(true);
+
+    setModalVisible(true);
+    setIsSearching(true);
+
+    try {
+      const api = await apiClient();
+
+      let gameSessionId;
+
+      // Criar uma nova sessão de jogo ou juntar-se a uma existente
+      const sessionResponse = await api.post('/games/sessions', {
+        theme: quizTheme,
+        quizId,
+        userId: user?.id,
+        isRealTime: false,
+      });
+
+      console.log('Game session:', sessionResponse.data);
+      gameSessionId = sessionResponse.data.gameSession.id;
+
+      setIsSearching(false);
+      router.push({
+        pathname: '/duel-quiz',
+        params: { quizId, gameSessionId: Number(gameSessionId) },
+      });
+    } catch (error) {
+      console.error('Error:', error);
+      setIsSearching(false);
+      setModalVisible(false);
+    }
+  };
+
   const handleRoomCodeChange = (text: string) => {
     // Apenas permite números e limita a 4 dígitos
     const validatedCode = text.replace(/[^0-9]/g, '').slice(0, 4);
@@ -58,9 +114,9 @@ export default function Discover() {
               keyboardType="number-pad"
               placeholder="Digite o código da sala"
               placeholderTextColor="#6A5AE0"
-              maxLength={4} // Limita a entrada a 4 caracteres
+              maxLength={4}
               value={roomCode}
-              onChangeText={handleRoomCodeChange} // Função de validação
+              onChangeText={handleRoomCodeChange}
             />
           </View>
 
@@ -68,63 +124,55 @@ export default function Discover() {
           <View style={styles.sectionContainer}>
             <Text style={styles.sectionTitle}>Quiz</Text>
             <TouchableOpacity onPress={() => {}}>
-              <Text style={styles.seeAllText}>See all</Text>
+              <Text style={styles.seeAllText}>Ver todos</Text>
             </TouchableOpacity>
           </View>
           <View style={styles.quizContainer}>
-            <TouchableOpacity onPress={handleQuizSelection} style={styles.quizCard}>
-              {/* Adicionado onPress */}
-              <Image style={styles.quizIcon} source={require('../../assets/live-quiz-icon.png')} />
-              <View>
-                <Text style={styles.quizTitle}>Statistics Math Quiz</Text>
-                <Text style={styles.quizSubtitle}>Math • 12 Quizzes</Text>
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={handleQuizSelection} style={styles.quizCard}>
-              {/* Adicionado onPress */}
-              <Image style={styles.quizIcon} source={require('../../assets/live-quiz-icon.png')} />
-              <View>
-                <Text style={styles.quizTitle}>Matrices Quiz</Text>
-                <Text style={styles.quizSubtitle}>Math • 6 Quizzes</Text>
-              </View>
-            </TouchableOpacity>
+            {quizzes.map((quiz: any) => (
+              <TouchableOpacity
+                key={quiz.id}
+                onPress={() => {
+                  handleQuizSelection(quiz.id, quiz.theme);
+                }}
+                style={styles.quizCard}>
+                {quiz.gameSessions && quiz.gameSessions.length > 0 && (
+                  <View style={styles.statusBadge}>
+                    <Text style={styles.statusText}>{quiz.gameSessions[0].status}</Text>
+                  </View>
+                )}
+
+                <Image
+                  style={styles.quizIcon}
+                  source={require('../../assets/live-quiz-icon.png')}
+                />
+                <View style={styles.quizContent}>
+                  <Text style={styles.quizTitle}>{quiz.title}</Text>
+                  <Text style={styles.quizSubtitle}>{quiz.theme}</Text>
+                  <Text style={styles.quizCode}>Código: {quiz?.gameSessions[0]?.code}</Text>
+                </View>
+              </TouchableOpacity>
+            ))}
           </View>
 
           {/* Friends Section */}
           <View style={styles.sectionContainer}>
-            <Text style={styles.sectionTitle}>Friends</Text>
+            <Text style={styles.sectionTitle}>Amigos</Text>
           </View>
           <View style={styles.friendsContainer}>
-            <View style={styles.friendCard}>
-              <Image
-                style={styles.friendAvatar}
-                source={{ uri: 'https://github.com/pedrogiampietro.png' }}
-              />
-              <View>
-                <Text style={styles.friendName}>Maren Workman</Text>
-                <Text style={styles.friendPoints}>325 points</Text>
+            {friendsList.map((friend: any) => (
+              <View style={styles.friendCard}>
+                <Image
+                  style={styles.friendAvatar}
+                  source={{ uri: 'https://github.com/pedrogiampietro.png' }}
+                />
+                <View>
+                  <Text style={styles.friendName}>{friend.recipient.name}</Text>
+                  <Text style={styles.friendPoints}>
+                    {friend.recipient.points === 0 ? '0' : friend.recipient.points} points
+                  </Text>
+                </View>
               </View>
-            </View>
-            <View style={styles.friendCard}>
-              <Image
-                style={styles.friendAvatar}
-                source={{ uri: 'https://github.com/pedrogiampietro.png' }}
-              />
-              <View>
-                <Text style={styles.friendName}>Brandon Matrovs</Text>
-                <Text style={styles.friendPoints}>124 points</Text>
-              </View>
-            </View>
-            <View style={styles.friendCard}>
-              <Image
-                style={styles.friendAvatar}
-                source={{ uri: 'https://github.com/pedrogiampietro.png' }}
-              />
-              <View>
-                <Text style={styles.friendName}>Manuela Lipshutz</Text>
-                <Text style={styles.friendPoints}>437 points</Text>
-              </View>
-            </View>
+            ))}
           </View>
 
           {/* Modal para buscar oponente */}
@@ -151,7 +199,6 @@ export default function Discover() {
     </ScrollView>
   );
 }
-
 const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
@@ -240,11 +287,15 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     borderColor: '#E5E5E5',
     borderWidth: 1,
+    position: 'relative', // Necessário para o posicionamento absoluto do badge
   },
   quizIcon: {
     width: 40,
     height: 40,
     marginRight: 10,
+  },
+  quizContent: {
+    flex: 1,
   },
   quizTitle: {
     fontSize: 16,
@@ -253,6 +304,25 @@ const styles = StyleSheet.create({
   quizSubtitle: {
     fontSize: 14,
     color: '#777777',
+  },
+  quizCode: {
+    fontSize: 12,
+    color: '#777777',
+    marginTop: 5,
+  },
+  statusBadge: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    backgroundColor: '#FF6347', // Cor de fundo do badge
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 12,
+  },
+  statusText: {
+    color: '#ffffff',
+    fontSize: 12,
+    fontWeight: 'bold',
   },
   friendsContainer: {
     marginTop: 10,
@@ -276,6 +346,7 @@ const styles = StyleSheet.create({
   friendName: {
     fontSize: 16,
     fontWeight: 'bold',
+    color: '#6A5AE0',
   },
   friendPoints: {
     fontSize: 14,
