@@ -5,6 +5,7 @@ import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { apiClient } from '~/services/api';
 import { useAuth } from '~/hooks/useAuth';
 import { RewardsModal } from '~/components/RewardsModal';
+import { EvilIcons } from '@expo/vector-icons';
 
 const quizCardImage = require('../../assets/recent-quiz.png');
 const featuredCardImage = require('../../assets/mask-group.png');
@@ -20,6 +21,7 @@ const sections = [
 
 export default function Home() {
   const [recentQuizzes, setRecentQuizzes] = useState([]);
+  const [mostQuizPlayed, setMostQuizPlayed] = useState([]);
   const router = useRouter();
   const { user } = useAuth();
 
@@ -36,6 +38,20 @@ export default function Home() {
     };
 
     fetchRecentQuizzes();
+  }, []);
+
+  useEffect(() => {
+    const fetchQuizMorePlaying = async () => {
+      try {
+        const api = await apiClient();
+        const response = await api.get('/quizzes/most-played-quiz');
+        console.log('most played', response.data);
+        setMostQuizPlayed(response.data.mostPlayedQuiz);
+      } catch (error) {
+        console.error('Error:', error);
+      }
+    };
+    fetchQuizMorePlaying();
   }, []);
 
   const handleQuizSelection = async (theme: string) => {
@@ -87,7 +103,7 @@ export default function Home() {
         renderItem={({ item }) => {
           switch (item.type) {
             case 'RecentQuiz':
-              return <RecentQuiz />;
+              return <RecentQuiz mostQuizPlayed={mostQuizPlayed} />;
             case 'Featured':
               return <Featured handleFriends={handleFriends} />;
             case 'RecentQuizzes':
@@ -102,16 +118,16 @@ export default function Home() {
   );
 }
 
-const RecentQuiz = () => (
+const RecentQuiz = ({ mostQuizPlayed }: any) => (
   <View style={styles.quizContainer}>
     <View style={styles.quizContent}>
       <Image source={quizCardImage} style={styles.quizCardImage} />
-      <Text style={styles.quizTitle}>Recentes Quizes</Text>
+      <Text style={styles.quizTitle}>Quiz mais jogado</Text>
       <View style={styles.quizTextOverlay}>
-        <Text style={styles.quizName}>A Basic Music Quiz</Text>
+        <Text style={styles.quizName}>{mostQuizPlayed.title}</Text>
       </View>
       <View style={styles.quizPercentageContainer}>
-        <Text style={styles.quizPercentage}>65%</Text>
+        <Text style={styles.quizPercentage}>{mostQuizPlayed.playerCount}</Text>
       </View>
     </View>
   </View>
@@ -205,7 +221,7 @@ const styles = StyleSheet.create({
   quizPercentageContainer: {
     position: 'absolute',
     top: 15,
-    right: 23,
+    right: 25,
     width: 50,
     height: 50,
     justifyContent: 'center',

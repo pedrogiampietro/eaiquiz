@@ -51,7 +51,7 @@ export default function MatchHistory({ userId }: any) {
           <Text style={styles.sectionTitle}>Partidas Completas</Text>
           <FlatList
             data={completedMatches}
-            keyExtractor={(item) => item.id.toString()}
+            keyExtractor={(item: any) => item.id.toString()}
             renderItem={renderCompletedMatchItem}
             ListEmptyComponent={
               <Text style={styles.emptyMessage}>Nenhuma partida completa encontrada.</Text>
@@ -63,7 +63,7 @@ export default function MatchHistory({ userId }: any) {
           <Text style={styles.sectionTitle}>Partidas em Andamento</Text>
           <FlatList
             data={ongoingMatches}
-            keyExtractor={(item) => item.id.toString()}
+            keyExtractor={(item: any) => item.id.toString()}
             renderItem={renderOngoingMatchItem}
             ListEmptyComponent={
               <Text style={styles.emptyMessage}>Nenhuma partida em andamento encontrada.</Text>
