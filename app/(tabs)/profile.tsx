@@ -1,26 +1,102 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Image, ImageBackground, Text, TouchableOpacity } from 'react-native';
-import { FontAwesome5, MaterialIcons } from '@expo/vector-icons';
+import {
+  StyleSheet,
+  View,
+  Image,
+  ImageBackground,
+  Text,
+  TouchableOpacity,
+  ToastAndroid,
+  Alert,
+  ActivityIndicator,
+} from 'react-native';
+import { FontAwesome5, MaterialIcons, Ionicons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
 import ProfileTab from 'components/ProfileTab';
 import StatsSection from 'components/StatsSection';
 import { useAuth } from '~/hooks/useAuth';
+import { apiClient } from '~/services/api';
+import { getInitials } from '~/utils';
 
 const maskGroupProfile = require('../../assets/mask-group-profile.png');
 const lockedBadge = require('../../assets/badges/locked-badge.png');
 
 const badges = [
-  { id: 1, image: require('../../assets/badges/3.png'), obtained: true },
+  { id: 1, image: require('../../assets/badges/3.png'), obtained: false },
   { id: 2, image: require('../../assets/badges/4.png'), obtained: false },
-  { id: 3, image: require('../../assets/badges/5.png'), obtained: true },
+  { id: 3, image: require('../../assets/badges/5.png'), obtained: false },
   { id: 4, image: require('../../assets/badges/6.png'), obtained: false },
-  { id: 5, image: require('../../assets/badges/7.png'), obtained: true },
+  { id: 5, image: require('../../assets/badges/7.png'), obtained: false },
   { id: 6, image: require('../../assets/badges/8.png'), obtained: false },
 ];
 
 export default function Profile() {
   const [activeTab, setActiveTab] = useState('Badge');
+  const [avatarUri, setAvatarUri] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const { logout, user, setUser } = useAuth();
 
-  const { logout } = useAuth();
+  const changeHeaderImage = async () => {
+    const { granted } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!granted) {
+      Alert.alert('Permissão necessária', 'Permita que sua aplicação acesse as imagens');
+      return;
+    }
+
+    const { assets, canceled }: any = await ImagePicker.launchImageLibraryAsync({
+      allowsEditing: true,
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      base64: false,
+      aspect: [1, 1],
+      quality: 1,
+    });
+
+    if (canceled) {
+      ToastAndroid.show('Operação cancelada', ToastAndroid.SHORT);
+    } else if (assets && assets.length > 0) {
+      setAvatarUri(assets[0].uri);
+      await handleSave(assets[0].uri);
+    }
+  };
+
+  const handleSave = async (uri: string) => {
+    setLoading(true);
+    const formData = new FormData() as any;
+    formData.append('userId', user?.id);
+    formData.append('name', user?.name);
+    if (uri) {
+      formData.append('avatar', {
+        uri,
+        type: 'image/jpeg',
+        name: 'avatar.jpg',
+      } as any);
+    }
+
+    try {
+      const api = await apiClient();
+      const response = await api.put('/auth/profile', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      if (response.data) {
+        setUser({
+          ...user,
+          profileImage: response.data.user.profileImage,
+        });
+        ToastAndroid.show('Perfil atualizado com sucesso!', ToastAndroid.SHORT);
+      } else {
+        const errorMessage = response.data.message || 'Erro ao atualizar perfil.';
+        ToastAndroid.show(errorMessage, ToastAndroid.SHORT);
+      }
+    } catch (error: any) {
+      const errorText = error.message || 'Erro ao atualizar perfil.';
+      ToastAndroid.show(errorText, ToastAndroid.SHORT);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const renderContent = () => {
     switch (activeTab) {
@@ -56,37 +132,38 @@ export default function Profile() {
         <View style={styles.cardContainer}>
           {/* Profile Image */}
           <View style={styles.profileImageWrapper}>
-            <Image
-              source={{ uri: 'https://github.com/pedrogiampietro.png' }}
-              style={styles.profileImage}
-            />
-            <View style={styles.flagContainer}>
+            {avatarUri || user?.profileImage ? (
               <Image
-                source={{
-                  uri: 'https://w7.pngwing.com/pngs/103/422/png-transparent-brazil-flag-flag-of-brazil-emoji-flag-of-colombia-english-brasil-flag-rectangle-logo-thumbnail.png',
-                }}
-                style={styles.flagIcon}
+                source={{ uri: avatarUri || user?.profileImage || '' }}
+                style={styles.profileImage}
               />
-            </View>
+            ) : (
+              <View style={styles.avatarFallback}>
+                <Text style={styles.avatarText}>{getInitials(user?.name || 'User')}</Text>
+              </View>
+            )}
+            <TouchableOpacity style={styles.changeButton} onPress={changeHeaderImage}>
+              <Ionicons name="create-outline" size={24} color="#FFF" />
+            </TouchableOpacity>
           </View>
 
           {/* Profile Info */}
-          <Text style={styles.profileName}>Pedro Giampietro</Text>
+          <Text style={styles.profileName}>{user?.name}</Text>
           <View style={styles.statsContainer}>
             <View style={styles.statBox}>
               <FontAwesome5 name="star" size={20} color="#FFF" />
               <Text style={styles.statLabel}>POINTS</Text>
-              <Text style={styles.statValue}>590</Text>
+              <Text style={styles.statValue}>{user?.points}</Text>
             </View>
             <View style={styles.statBox}>
               <FontAwesome5 name="globe" size={20} color="#FFF" />
               <Text style={styles.statLabel}>WORLD RANK</Text>
-              <Text style={styles.statValue}>#1,438</Text>
+              <Text style={styles.statValue}>{user?.worldRank}</Text>
             </View>
             <View style={styles.statBox}>
               <MaterialIcons name="location-on" size={20} color="#FFF" />
               <Text style={styles.statLabel}>LOCAL RANK</Text>
-              <Text style={styles.statValue}>#56</Text>
+              <Text style={styles.statValue}>{user?.localRank}</Text>
             </View>
           </View>
 
@@ -97,6 +174,7 @@ export default function Profile() {
           {renderContent()}
         </View>
       </ImageBackground>
+      {loading && <ActivityIndicator size="large" color="#FFF" style={styles.loadingIndicator} />}
     </View>
   );
 }
@@ -233,5 +311,35 @@ const styles = StyleSheet.create({
     height: 62,
     tintColor: '#000',
     opacity: 0.7,
+  },
+  loadingIndicator: {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    marginLeft: -15,
+    marginTop: -15,
+    zIndex: 20,
+  },
+  avatarFallback: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    marginBottom: 10,
+    backgroundColor: '#5f52c5',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  avatarText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  changeButton: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    backgroundColor: '#2b1a12',
+    borderRadius: 50,
+    padding: 5,
   },
 });

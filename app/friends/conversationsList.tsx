@@ -2,16 +2,10 @@ import React from 'react';
 import { FlatList, View, Text, Image, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { styles } from './styles';
+import { getInitials } from '~/utils';
 
 const ConversationsList = ({ conversations }: any) => {
   const router = useRouter();
-
-  const getInitials = (name: string) => {
-    if (!name) return '';
-    const names = name.split(' ');
-    const initials = names.map((n) => n[0]).join('');
-    return initials;
-  };
 
   return (
     <FlatList

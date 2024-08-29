@@ -5,7 +5,7 @@ import Svg, { Circle, G } from 'react-native-svg';
 const maskGroupStats = require('../assets/mask-group-stats.png');
 
 const StatsSection = () => {
-  const progress = 37;
+  const progress = 0;
   const total = 50;
   const percentage = (progress / total) * 100;
 
@@ -21,7 +21,7 @@ const StatsSection = () => {
         <ImageBackground source={maskGroupStats} style={styles.cardBackground}>
           {/* Title and Subtitle */}
           <Text style={styles.statsTitle}>You have played a total</Text>
-          <Text style={styles.statsSubtitle}>24 quizzes this month!</Text>
+          <Text style={styles.statsSubtitle}>0 quizzes this month!</Text>
 
           {/* Progress Ring Section */}
           <View style={styles.progressRingSection}>
@@ -62,11 +62,11 @@ const StatsSection = () => {
           {/* Stats Boxes */}
           <View style={styles.quizStats}>
             <View style={styles.quizStatBox}>
-              <Text style={styles.quizStatNumber}>5</Text>
+              <Text style={styles.quizStatNumber}>0</Text>
               <Text style={styles.quizStatLabel}>Quiz Created</Text>
             </View>
             <View style={styles.quizStatBox}>
-              <Text style={styles.quizStatNumber}>21</Text>
+              <Text style={styles.quizStatNumber}>0</Text>
               <Text style={styles.quizStatLabel}>Quiz Won</Text>
             </View>
           </View>
@@ -78,9 +78,9 @@ const StatsSection = () => {
           <View style={styles.categoryBars}>
             {/* Example data for category performance */}
             {[
-              { category: 'Math', progress: 30, total: 100 },
-              { category: 'Sports', progress: 80, total: 100 },
-              { category: 'Music', progress: 60, total: 100 },
+              { category: 'Games', progress: 0, total: 100 },
+              { category: 'Português', progress: 0, total: 100 },
+              { category: 'Biologia', progress: 0, total: 100 },
             ].map((item, index) => (
               <View key={index} style={styles.categoryBar}>
                 <Text style={styles.categoryBarLabel}>{item.category}</Text>

@@ -2,6 +2,7 @@ import FontAwesome from '@expo/vector-icons/FontAwesome';
 import React, { forwardRef } from 'react';
 import { StyleSheet, View, Text, Image, Pressable } from 'react-native';
 import { useAuth } from '../hooks/useAuth';
+import { getInitials } from '../utils';
 
 const calculateProgress = (points: number) => {
   const maxPoints = 100;
@@ -21,10 +22,13 @@ export const CustomHeaderHome = () => {
           style={styles.avatarBackground}
         />
         <View style={styles.avatarContainer}>
-          <Image
-            source={{ uri: 'https://github.com/pedrogiampietro.png' }}
-            style={styles.avatarImage}
-          />
+          {user?.profileImage ? (
+            <Image source={{ uri: user.profileImage }} style={styles.avatarImage} />
+          ) : (
+            <View style={styles.avatarFallback}>
+              <Text style={styles.avatarText}>{getInitials(user?.name || 'User')}</Text>
+            </View>
+          )}
         </View>
         <View style={styles.userInfoContainer}>
           <Text style={styles.points}>{user?.points}</Text>
@@ -98,6 +102,19 @@ const styles = StyleSheet.create({
     width: 149,
     height: 48,
     resizeMode: 'contain',
+  },
+  avatarFallback: {
+    width: 30,
+    height: 30,
+    backgroundColor: '#5f52c5',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 5,
+  },
+  avatarText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: 'bold',
   },
   userInfoContainer: {
     flexDirection: 'column',
