@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import { useRouter } from 'expo-router';
+import React from 'react';
 import {
   StyleSheet,
   View,
@@ -14,12 +15,8 @@ const modalBackground = require('../assets/ui/modal-rewards-ui.png');
 const starBig = require('../assets/star_big.png');
 const starSmall = require('../assets/star_small.png');
 
-export function RewardsModal({}) {
-  const [showResultModal, setShowResultModal] = useState(true);
-  const [score, setScore] = useState(0);
-  const rewardAmount = 100;
-  const [correctAnswers, setCorrectAnswers] = useState(1);
-
+export function RewardsModal({ visible, score, correctAnswers, rewardAmount, onClose }: any) {
+  const router = useRouter();
   const getStarImages = () => {
     let starImages = [];
 
@@ -31,11 +28,7 @@ export function RewardsModal({}) {
   };
 
   return (
-    <Modal
-      visible={showResultModal}
-      transparent={true}
-      animationType="slide"
-      onRequestClose={() => setShowResultModal(false)}>
+    <Modal visible={visible} transparent={true} animationType="slide" onRequestClose={onClose}>
       <View style={styles.modalOverlay}>
         <View style={styles.modalContent}>
           <ImageBackground
@@ -62,7 +55,12 @@ export function RewardsModal({}) {
             <Text style={styles.scoreText}>{score}</Text>
             <Text style={styles.rewardText}>{rewardAmount}</Text>
 
-            <TouchableOpacity style={styles.okButton} onPress={() => setShowResultModal(false)}>
+            <TouchableOpacity
+              style={styles.okButton}
+              onPress={() => {
+                onClose();
+                router.push('/(tabs)');
+              }}>
               <Text style={styles.okButtonText}>OK</Text>
             </TouchableOpacity>
           </ImageBackground>

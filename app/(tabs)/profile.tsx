@@ -17,6 +17,7 @@ import StatsSection from 'components/StatsSection';
 import { useAuth } from '~/hooks/useAuth';
 import { apiClient } from '~/services/api';
 import { getInitials } from '~/utils';
+import MatchHistory from '../layouts/match-history';
 
 const maskGroupProfile = require('../../assets/mask-group-profile.png');
 const lockedBadge = require('../../assets/badges/locked-badge.png');
@@ -113,8 +114,8 @@ export default function Profile() {
         );
       case 'Stats':
         return <StatsSection />;
-      case 'Details':
-        return <Text>Details Content</Text>;
+      case 'History':
+        return <MatchHistory userId={user?.id} />;
       default:
         return null;
     }

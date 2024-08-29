@@ -11,7 +11,7 @@ const ProfileTab = ({ onTabChange }: any) => {
 
   return (
     <View style={styles.tabsContainer}>
-      {['Badge', 'Stats', 'Details'].map((tab) => (
+      {['Badge', 'Stats', 'History'].map((tab) => (
         <TouchableOpacity
           key={tab}
           style={[styles.tabButton, activeTab === tab && styles.activeTab]}

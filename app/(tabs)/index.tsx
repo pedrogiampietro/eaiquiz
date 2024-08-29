@@ -158,8 +158,6 @@ const RecentQuizzes = ({ quizzes, onQuizSelect }: any) => (
         </TouchableOpacity>
       )}
     />
-
-    <RewardsModal />
   </View>
 );
 

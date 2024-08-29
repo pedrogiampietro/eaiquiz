@@ -1,29 +1,13 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
-import { useRouter } from 'expo-router';
 import { ToastAndroid } from 'react-native';
+import { useRouter } from 'expo-router';
 
 const limit = 20;
-
-export let baseURL = process.env.REACT_APP_API_URL
-  ? process.env.REACT_APP_API_URL.startsWith('https')
-    ? `${process.env.REACT_APP_API_URL}`
-    : process.env.REACT_APP_API_URL
-  : 'http://192.168.1.7:5000';
-
-export async function signOut() {
-  await AsyncStorage.removeItem('user@eaiquiz');
-  await AsyncStorage.removeItem('token@eaiquiz');
-  await AsyncStorage.removeItem('refreshToken@eaiquiz');
-
-  ToastAndroid.show('Ahhh, você já está indo? Isso será um até logo! 😁', ToastAndroid.SHORT);
-
-  const router = useRouter();
-  router.push('/login');
-}
+export const baseURL = process.env.REACT_APP_API_URL || 'http://192.168.1.7:5000';
 
 /**
- * Creates an instance of axios with predefined configuration.
+ * Cria uma instância do axios com configuração predefinida.
  */
 export async function apiClient() {
   const token = await AsyncStorage.getItem('token@eaiquiz');
@@ -31,66 +15,51 @@ export async function apiClient() {
   const api = axios.create({
     baseURL,
     headers: {
-      Authorization: `Bearer ${token}`,
+      Authorization: token ? `Bearer ${token}` : '',
       'Content-Type': 'application/json',
       Accept: 'application/json',
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Credentials': 'true',
     },
   });
 
-  // Request interceptor to add limit header for GET requests
   api.interceptors.request.use(
     (request) => {
       if (request.method?.toLowerCase() === 'get') {
         request.headers.limit = request.headers.limit ?? String(limit);
       }
+      // console.log('Requisição interceptada:', request);
       return request;
     },
-    (error) => Promise.reject(error)
+    (error) => {
+      // console.error('Erro na requisição:', error);
+      return Promise.reject(error);
+    }
   );
 
-  // Response interceptor to handle errors and token expiration
   api.interceptors.response.use(
-    (response) => response,
+    (response) => {
+      // console.log('Resposta recebida:', response);
+      return response;
+    },
     async (error) => {
       const originalRequest = error.config;
 
       if (error.response && error.response.status === 401 && !originalRequest._retry) {
         originalRequest._retry = true;
-        const refreshToken = await AsyncStorage.getItem('refreshToken@eaiquiz');
 
-        if (refreshToken) {
-          try {
-            const { data } = await axios.post(`${baseURL}/auth/refresh`, { refreshToken });
-
-            // Save the new tokens
-            await AsyncStorage.setItem('token@eaiquiz', data.token);
-            await AsyncStorage.setItem('refreshToken@eaiquiz', data.refreshToken);
-
-            // Update the header
-            api.defaults.headers.common['Authorization'] = `Bearer ${data.token}`;
-            originalRequest.headers['Authorization'] = `Bearer ${data.token}`;
-
-            return api(originalRequest);
-          } catch (refreshError) {
-            await signOut();
-            return Promise.reject(refreshError);
-          }
-        } else {
-          await signOut();
-        }
+        const router = useRouter();
+        await signOut(router);
       } else if (error.response) {
         const errorMessage = error.response.data?.error || 'Erro desconhecido';
         ToastAndroid.show(errorMessage, ToastAndroid.SHORT);
-        console.error('Server response error:', error.response);
+        console.error('Erro de resposta do servidor:', error.response);
       } else if (error.request) {
         ToastAndroid.show('Nenhuma resposta recebida do servidor.', ToastAndroid.SHORT);
-        console.error('No response received:', error.request);
-        await signOut();
+        console.error('Nenhuma resposta recebida:', error.request);
+        const router = useRouter();
+        await signOut(router);
       } else {
         ToastAndroid.show(error.message, ToastAndroid.SHORT);
-        console.error('Request configuration error:', error.message);
+        console.error('Erro na configuração da requisição:', error.message);
       }
 
       return Promise.reject(error);
@@ -98,4 +67,16 @@ export async function apiClient() {
   );
 
   return api;
+}
+
+/**
+ * Função para sair do usuário
+ */
+export async function signOut(router: any) {
+  await AsyncStorage.removeItem('user@eaiquiz');
+  await AsyncStorage.removeItem('token@eaiquiz');
+  ToastAndroid.show('Ahhh, você já está indo? Isso será um até logo! 😁', ToastAndroid.SHORT);
+  if (router) {
+    router.push('/login');
+  }
 }

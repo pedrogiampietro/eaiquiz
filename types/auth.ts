@@ -19,7 +19,5 @@ export interface AuthContextType {
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
-  refreshToken: any;
-  refreshTokenIfNeeded: any;
   updateUser: any;
 }

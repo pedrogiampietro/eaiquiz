@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, ImageBackground, Modal } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, ImageBackground } from 'react-native';
 import LottieView from 'lottie-react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { apiClient } from 'services/api';
 import { useAuth } from 'hooks/useAuth';
+import { RewardsModal } from 'components/RewardsModal';
 
 export default function DuelQuiz() {
   const [questions, setQuestions] = useState<any>([]);
@@ -157,54 +158,17 @@ export default function DuelQuiz() {
           ))}
         </View>
 
-        <Modal
+        <RewardsModal
           visible={showResultModal}
-          transparent={true}
-          animationType="slide"
-          onRequestClose={() => setShowResultModal(false)}>
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
-              {opponentStatus === 'pending' ? (
-                <Text style={styles.modalText}>Waiting for opponent to finish...</Text>
-              ) : score > opponentScore ? (
-                <>
-                  <Text style={styles.modalTitle}>Congrats!</Text>
-                  <LottieView
-                    source={require('../assets/lotties/conffeti_lottie.json')}
-                    autoPlay
-                    loop={false}
-                    style={styles.lottie}
-                  />
-                </>
-              ) : (
-                <>
-                  <Text style={styles.modalTitle}>Better Luck Next Time!</Text>
-                </>
-              )}
-              <Text style={styles.modalScore}>Your Score: {score}</Text>
-              <Text style={styles.modalScore}>
-                Opponent's Score: {opponentScore !== null ? opponentScore : 'Pending'}
-              </Text>
-              <Text style={styles.modalText}>
-                You answered {score} out of {questions.length} correctly.
-              </Text>
-              <Text style={styles.modalText}>
-                Your opponent answered {opponentScore !== null ? opponentScore : 'pending'} out of{' '}
-                {questions.length} correctly.
-              </Text>
-              <TouchableOpacity
-                style={styles.closeButton}
-                onPress={() => setShowResultModal(false)}>
-                <Text style={styles.closeButtonText}>Close</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </Modal>
+          score={score}
+          correctAnswers={score} // Você pode ajustar isso conforme a lógica que deseja
+          rewardAmount={100} // Exemplo, você pode ajustar conforme necessário
+          onClose={() => setShowResultModal(false)}
+        />
       </View>
     </ImageBackground>
   );
 }
-
 const styles = StyleSheet.create({
   background: {
     flex: 1,

@@ -160,7 +160,7 @@ export default function Discover() {
           </View>
           <View style={styles.friendsContainer}>
             {friendsList.map((friend: any) => (
-              <View style={styles.friendCard}>
+              <View style={styles.friendCard} key={friend.id}>
                 <Image
                   style={styles.friendAvatar}
                   source={{ uri: 'https://github.com/pedrogiampietro.png' }}
