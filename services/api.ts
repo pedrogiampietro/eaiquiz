@@ -4,7 +4,6 @@ import { useRouter } from 'expo-router';
 import { ToastAndroid } from 'react-native';
 
 const limit = 20;
-let token = null as any;
 
 export let baseURL = process.env.REACT_APP_API_URL
   ? process.env.REACT_APP_API_URL.startsWith('https')
@@ -15,6 +14,7 @@ export let baseURL = process.env.REACT_APP_API_URL
 export async function signOut() {
   await AsyncStorage.removeItem('user@eaiquiz');
   await AsyncStorage.removeItem('token@eaiquiz');
+  await AsyncStorage.removeItem('refreshToken@eaiquiz');
 
   ToastAndroid.show('Ahhh, você já está indo? Isso será um até logo! 😁', ToastAndroid.SHORT);
 
@@ -26,11 +26,7 @@ export async function signOut() {
  * Creates an instance of axios with predefined configuration.
  */
 export async function apiClient() {
-  const storedToken = await AsyncStorage.getItem('token@eaiquiz');
-
-  if (storedToken) {
-    token = storedToken;
-  }
+  const token = await AsyncStorage.getItem('token@eaiquiz');
 
   const api = axios.create({
     baseURL,
@@ -58,14 +54,36 @@ export async function apiClient() {
   api.interceptors.response.use(
     (response) => response,
     async (error) => {
-      if (error.response) {
-        if (error.response.data?.name === 'TokenExpiredError') {
-          await signOut();
+      const originalRequest = error.config;
+
+      if (error.response && error.response.status === 401 && !originalRequest._retry) {
+        originalRequest._retry = true;
+        const refreshToken = await AsyncStorage.getItem('refreshToken@eaiquiz');
+
+        if (refreshToken) {
+          try {
+            const { data } = await axios.post(`${baseURL}/auth/refresh`, { refreshToken });
+
+            // Save the new tokens
+            await AsyncStorage.setItem('token@eaiquiz', data.token);
+            await AsyncStorage.setItem('refreshToken@eaiquiz', data.refreshToken);
+
+            // Update the header
+            api.defaults.headers.common['Authorization'] = `Bearer ${data.token}`;
+            originalRequest.headers['Authorization'] = `Bearer ${data.token}`;
+
+            return api(originalRequest);
+          } catch (refreshError) {
+            await signOut();
+            return Promise.reject(refreshError);
+          }
         } else {
-          const errorMessage = error.response.data?.error || 'Erro desconhecido';
-          ToastAndroid.show(errorMessage, ToastAndroid.SHORT);
-          console.error('Server response error:', error.response);
+          await signOut();
         }
+      } else if (error.response) {
+        const errorMessage = error.response.data?.error || 'Erro desconhecido';
+        ToastAndroid.show(errorMessage, ToastAndroid.SHORT);
+        console.error('Server response error:', error.response);
       } else if (error.request) {
         ToastAndroid.show('Nenhuma resposta recebida do servidor.', ToastAndroid.SHORT);
         console.error('No response received:', error.request);
@@ -74,6 +92,7 @@ export async function apiClient() {
         ToastAndroid.show(error.message, ToastAndroid.SHORT);
         console.error('Request configuration error:', error.message);
       }
+
       return Promise.reject(error);
     }
   );

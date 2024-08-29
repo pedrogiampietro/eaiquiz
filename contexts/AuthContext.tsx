@@ -26,9 +26,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         const user = await AsyncStorage.getItem('user@eaiquiz');
 
         if (token && refreshToken && user) {
-          setToken(token);
-          setRefreshToken(refreshToken);
           setUser(JSON.parse(user) as User);
+          const api = await apiClient();
+          api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         } else {
           await AsyncStorage.removeItem('user@eaiquiz');
           await AsyncStorage.removeItem('token@eaiquiz');
@@ -45,6 +45,31 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     loadStorageData();
   }, []);
+
+  const login = async (email: string, password: string) => {
+    try {
+      const api = await apiClient();
+      const { data } = await api.post('/auth/login', { email, password });
+      setUser(data.user);
+
+      api.defaults.headers.common['Authorization'] = `Bearer ${data.token}`;
+
+      await AsyncStorage.setItem('token@eaiquiz', data.token);
+      await AsyncStorage.setItem('refreshToken@eaiquiz', data.refreshToken);
+      await AsyncStorage.setItem('user@eaiquiz', JSON.stringify(data.user));
+    } catch (error) {
+      ToastAndroid.show('Erro ao fazer login', ToastAndroid.SHORT);
+      throw error;
+    }
+  };
+
+  const logout = async () => {
+    setUser(null);
+    await AsyncStorage.removeItem('token@eaiquiz');
+    await AsyncStorage.removeItem('refreshToken@eaiquiz');
+    await AsyncStorage.removeItem('user@eaiquiz');
+    router.push('/login');
+  };
 
   const refreshTokenIfNeeded = async () => {
     if (token && refreshToken) {
@@ -71,32 +96,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         logout();
       }
     }
-  };
-
-  const login = async (email: string, password: string) => {
-    try {
-      const api = await apiClient();
-      const { data } = await api.post('/auth/login', { email, password });
-      setUser(data.user);
-      setToken(data.token);
-      setRefreshToken(data.refreshToken);
-
-      await AsyncStorage.setItem('token@eaiquiz', data.token);
-      await AsyncStorage.setItem('refreshToken@eaiquiz', data.refreshToken);
-      await AsyncStorage.setItem('user@eaiquiz', JSON.stringify(data.user));
-    } catch (error) {
-      throw error;
-    }
-  };
-
-  const logout = async () => {
-    setUser(null);
-    setToken(null);
-    setRefreshToken(null);
-    await AsyncStorage.removeItem('token@eaiquiz');
-    await AsyncStorage.removeItem('refreshToken@eaiquiz');
-    await AsyncStorage.removeItem('user@eaiquiz');
-    router.push('/login');
   };
 
   // Função para atualizar o usuário após ganhar experiência

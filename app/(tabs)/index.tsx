@@ -4,6 +4,7 @@ import { StyleSheet, View, Text, Image, TouchableOpacity, FlatList } from 'react
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { apiClient } from '~/services/api';
 import { useAuth } from '~/hooks/useAuth';
+import { RewardsModal } from '~/components/RewardsModal';
 
 const quizCardImage = require('../../assets/recent-quiz.png');
 const featuredCardImage = require('../../assets/mask-group.png');
@@ -157,6 +158,8 @@ const RecentQuizzes = ({ quizzes, onQuizSelect }: any) => (
         </TouchableOpacity>
       )}
     />
+
+    <RewardsModal />
   </View>
 );
 
