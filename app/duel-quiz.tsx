@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, ImageBackground } from 'react-native';
 import LottieView from 'lottie-react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -20,6 +20,7 @@ export default function DuelQuiz() {
   const router = useRouter();
   const { user, updateUser } = useAuth();
 
+  const hasUpdatedUser = useRef(false);
   const userId = user?.id;
 
   useEffect(() => {
@@ -84,15 +85,16 @@ export default function DuelQuiz() {
   }, [showResultModal]);
 
   useEffect(() => {
-    if (showResultModal) {
+    if (showResultModal && !hasUpdatedUser.current) {
       updateUser();
+      hasUpdatedUser.current = true;
       const redirectTimer = setTimeout(() => {
         router.push('/(tabs)');
       }, 1500);
 
       return () => clearTimeout(redirectTimer);
     }
-  }, [showResultModal, router, updateUser]);
+  }, [showResultModal, router]);
 
   const handleOptionPress = async (option: any) => {
     setSelectedOption(option);
