@@ -7,6 +7,7 @@ import {
   StyleSheet,
   ImageBackground,
   ToastAndroid,
+  ActivityIndicator,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { apiClient } from '~/services/api';
@@ -84,9 +85,15 @@ export default function RegisterScreen() {
           secureTextEntry
           placeholderTextColor="#aaa"
         />
-        <TouchableOpacity style={styles.button} onPress={handleRegister}>
-          <Text style={styles.buttonText}>Registrar</Text>
+
+        <TouchableOpacity style={styles.button} onPress={handleRegister} disabled={loading}>
+          {loading ? (
+            <ActivityIndicator color="#FFF" />
+          ) : (
+            <Text style={styles.buttonText}>Registrar</Text>
+          )}
         </TouchableOpacity>
+
         <TouchableOpacity onPress={() => router.push('/login')}>
           <Text style={styles.linkText}>Já tem uma conta? Entrar</Text>
         </TouchableOpacity>

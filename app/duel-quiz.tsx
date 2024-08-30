@@ -161,8 +161,10 @@ export default function DuelQuiz() {
         <RewardsModal
           visible={showResultModal}
           score={score}
-          correctAnswers={score} // Você pode ajustar isso conforme a lógica que deseja
-          rewardAmount={100} // Exemplo, você pode ajustar conforme necessário
+          correctAnswers={score}
+          opponentStatus={opponentStatus}
+          opponentScore={opponentScore}
+          rewardAmount={0}
           onClose={() => setShowResultModal(false)}
         />
       </View>
