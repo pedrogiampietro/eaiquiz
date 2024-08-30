@@ -1,6 +1,6 @@
 {
   "name": "eaiquiz",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "main": "expo-router/entry",
   "scripts": {
     "android": "expo start --android",
@@ -9,7 +9,9 @@
     "lint": "eslint \"**/*.{js,jsx,ts,tsx}\" && prettier -c \"**/*.{js,jsx,ts,tsx,json}\"",
     "format": "eslint \"**/*.{js,jsx,ts,tsx}\" --fix && prettier \"**/*.{js,jsx,ts,tsx,json}\" --write",
     "web": "expo start --web",
-    "start:nocache": "expo start -c"
+    "start:nocache": "expo start -c",
+    "build:dev": "eas build --profile development --platform android",
+    "build:prod": "eas build --profile production --platform android"
   },
   "dependencies": {
     "@dotlottie/react-player": "^1.6.19",
