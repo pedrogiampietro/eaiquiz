@@ -9,6 +9,7 @@ import {
   Image,
   Modal,
   ActivityIndicator,
+  Keyboard,
 } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { useRouter, useFocusEffect } from 'expo-router';
@@ -23,12 +24,14 @@ export default function Discover() {
   const [roomCode, setRoomCode] = useState('');
   const [friendsList, setFriendsList] = useState<any>([]);
   const [quizzes, setQuizzes] = useState<any>([]);
+  const [gameSession, setGameSession] = useState<any>(null);
 
   useFocusEffect(
     React.useCallback(() => {
       setModalVisible(false);
       setIsSearching(false);
       setRoomCode('');
+      setGameSession(null);
     }, [])
   );
 
@@ -96,8 +99,45 @@ export default function Discover() {
     }
   };
 
+  const fetchGameSessionByCode = async () => {
+    if (!roomCode) return;
+
+    setIsSearching(true);
+    try {
+      const api = await apiClient();
+      const response = await api.get(`/games/session/code/${roomCode}`);
+
+      setGameSession(response.data.gameSession);
+      setIsSearching(false);
+      setModalVisible(true);
+    } catch (error) {
+      console.error('Erro ao buscar sessão de jogo pelo código:', error);
+      setIsSearching(false);
+    }
+  };
+
+  const handleJoinGameSession = async () => {
+    if (!gameSession) return;
+
+    try {
+      const api = await apiClient();
+      await api.post('/games/sessions', {
+        theme: gameSession.quiz.theme,
+        quizId: gameSession.quiz.id,
+        userId: user?.id,
+        isRealTime: false,
+      });
+
+      router.push({
+        pathname: '/duel-quiz',
+        params: { quizId: gameSession.quizId, gameSessionId: gameSession.id },
+      });
+    } catch (error) {
+      console.error('Erro ao entrar na sessão de jogo:', error);
+    }
+  };
+
   const handleRoomCodeChange = (text: string) => {
-    // Apenas permite números e limita a 4 dígitos
     const validatedCode = text.replace(/[^0-9]/g, '').slice(0, 4);
     setRoomCode(validatedCode);
   };
@@ -117,7 +157,16 @@ export default function Discover() {
               maxLength={4}
               value={roomCode}
               onChangeText={handleRoomCodeChange}
+              onSubmitEditing={fetchGameSessionByCode}
             />
+            <TouchableOpacity
+              style={styles.searchButton}
+              onPress={() => {
+                fetchGameSessionByCode();
+                Keyboard.dismiss(); // Fechar o teclado ao clicar no botão
+              }}>
+              <Text style={styles.searchButtonText}>Buscar</Text>
+            </TouchableOpacity>
           </View>
 
           {/* Quiz Section */}
@@ -188,8 +237,16 @@ export default function Discover() {
                     <Text style={styles.modalText}>Buscando oponente...</Text>
                     <ActivityIndicator size="large" color="#6A5AE0" />
                   </>
+                ) : gameSession ? (
+                  <>
+                    <Text style={styles.modalText}>Sessão encontrada!</Text>
+                    <Text style={styles.modalText}>Quiz: {gameSession.quiz.title}</Text>
+                    <TouchableOpacity style={styles.joinButton} onPress={handleJoinGameSession}>
+                      <Text style={styles.joinButtonText}>Entrar na Sala</Text>
+                    </TouchableOpacity>
+                  </>
                 ) : (
-                  <Text style={styles.modalText}>Oponente encontrado!</Text>
+                  <Text style={styles.modalText}>Nenhuma sessão encontrada.</Text>
                 )}
               </View>
             </View>
@@ -199,6 +256,7 @@ export default function Discover() {
     </ScrollView>
   );
 }
+
 const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
@@ -237,6 +295,17 @@ const styles = StyleSheet.create({
     fontSize: 18,
     marginBottom: 10,
   },
+  joinButton: {
+    backgroundColor: '#6A5AE0',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 10,
+    marginTop: 10,
+  },
+  joinButtonText: {
+    color: '#ffffff',
+    fontSize: 16,
+  },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -260,6 +329,17 @@ const styles = StyleSheet.create({
     color: '#6A5AE0',
     borderColor: '#E5E5E5',
     borderWidth: 1,
+  },
+  searchButton: {
+    marginLeft: 10,
+    backgroundColor: '#6A5AE0',
+    borderRadius: 20,
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+  },
+  searchButtonText: {
+    color: '#ffffff',
+    fontSize: 16,
   },
   sectionContainer: {
     flexDirection: 'row',
@@ -287,7 +367,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     borderColor: '#E5E5E5',
     borderWidth: 1,
-    position: 'relative', // Necessário para o posicionamento absoluto do badge
+    position: 'relative',
   },
   quizIcon: {
     width: 40,
@@ -314,7 +394,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 10,
     right: 10,
-    backgroundColor: '#FF6347', // Cor de fundo do badge
+    backgroundColor: '#FF6347',
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 12,

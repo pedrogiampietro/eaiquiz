@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { apiClient } from 'services/api';
 import { AuthContextType, User } from 'types/auth';
@@ -17,26 +17,26 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [loading, setLoading] = useState<boolean>(true);
   const router = useRouter();
 
-  useEffect(() => {
-    const loadStorageData = async () => {
-      try {
-        const storedUser = await AsyncStorage.getItem('user@eaiquiz');
+  // useEffect(() => {
+  //   const loadStorageData = async () => {
+  //     try {
+  //       const storedUser = await AsyncStorage.getItem('user@eaiquiz');
 
-        if (storedUser) {
-          setUser(JSON.parse(storedUser) as User);
-        } else {
-          await logout();
-        }
-      } catch (error) {
-        console.error('Error loading storage data:', error);
-        await logout();
-      } finally {
-        setLoading(false);
-      }
-    };
+  //       if (storedUser) {
+  //         setUser(JSON.parse(storedUser) as User);
+  //       } else {
+  //         await logout();
+  //       }
+  //     } catch (error) {
+  //       console.error('Error loading storage data:', error);
+  //       await logout();
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
 
-    loadStorageData();
-  }, []);
+  //   loadStorageData();
+  // }, []);
 
   const login = async (email: string, password: string) => {
     try {
@@ -56,25 +56,33 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const logout = async () => {
-    setUser(null);
-    setToken(null);
-    await AsyncStorage.removeItem('token@eaiquiz');
-    await AsyncStorage.removeItem('refreshToken@eaiquiz');
-    await AsyncStorage.removeItem('user@eaiquiz');
-    router.push('/login');
-  };
+  const logout = useCallback(async () => {
+    try {
+      // Remova todos os dados armazenados
+      await AsyncStorage.removeItem('token@eaiquiz');
+      await AsyncStorage.removeItem('refreshToken@eaiquiz');
+      await AsyncStorage.removeItem('user@eaiquiz');
+
+      // Limpe o estado do usuário e o token
+      setUser(null);
+      setToken(null);
+
+      // Navegue para a tela de login
+      router.push('/login');
+    } catch (error) {
+      console.error('Erro ao fazer logout:', error);
+    }
+  }, [router]);
 
   const updateUser = async () => {
-    try {
-      const api = await apiClient();
-      const { data } = await api.get('/auth/user');
-      setUser(data.user);
-
-      await AsyncStorage.setItem('user@eaiquiz', JSON.stringify(data.user));
-    } catch (error) {
-      console.error('Erro ao atualizar usuário:', error);
-    }
+    // try {
+    //   const api = await apiClient();
+    //   const { data } = await api.get('/auth/user');
+    //   setUser(data.user);
+    //   await AsyncStorage.setItem('user@eaiquiz', JSON.stringify(data.user));
+    // } catch (error) {
+    //   console.error('Erro ao atualizar usuário:', error);
+    // }
   };
 
   return (

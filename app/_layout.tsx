@@ -4,6 +4,7 @@ import React, { useEffect } from 'react';
 import AuthLayout from './layouts/AuthLayout';
 import MainLayout from './layouts/MainLayout';
 import { useRouter } from 'expo-router';
+import { ActivityIndicator } from 'react-native';
 
 export default function RootLayout() {
   return (
@@ -19,12 +20,12 @@ function ConditionalLayout() {
 
   useEffect(() => {
     if (!loading && !user) {
-      router.replace('/login');
+      router.push('/login');
     }
   }, [loading, user, router]);
 
   if (loading) {
-    return null;
+    return <ActivityIndicator color="#FFF" />;
   }
 
   return user ? <MainLayout /> : <AuthLayout />;

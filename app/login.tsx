@@ -83,7 +83,6 @@ export default function Login() {
     </ImageBackground>
   );
 }
-
 const styles = StyleSheet.create({
   background: {
     flex: 1,

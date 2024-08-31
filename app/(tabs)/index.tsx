@@ -4,8 +4,6 @@ import { StyleSheet, View, Text, Image, TouchableOpacity, FlatList } from 'react
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { apiClient } from '~/services/api';
 import { useAuth } from '~/hooks/useAuth';
-import { RewardsModal } from '~/components/RewardsModal';
-import { EvilIcons } from '@expo/vector-icons';
 
 const quizCardImage = require('../../assets/recent-quiz.png');
 const featuredCardImage = require('../../assets/mask-group.png');
@@ -28,10 +26,11 @@ export default function Home() {
   useEffect(() => {
     const fetchRecentQuizzes = async () => {
       try {
-        const api = await apiClient();
-        const response = await api.get('/quizzes/recent');
-
-        setRecentQuizzes(response.data);
+        console.log('chamando o recent quizes api');
+        // const api = await apiClient();
+        // const response = await api.get('/quizzes/recent');
+        // console.log('response.data', response.data);
+        // setRecentQuizzes(response.data);
       } catch (error) {
         console.error('Erro ao buscar quizzes recentes:', error);
       }
@@ -43,10 +42,11 @@ export default function Home() {
   useEffect(() => {
     const fetchQuizMorePlaying = async () => {
       try {
-        const api = await apiClient();
-        const response = await api.get('/quizzes/most-played-quiz');
-        console.log('most played', response.data);
-        setMostQuizPlayed(response.data.mostPlayedQuiz);
+        console.log('chamando o quiz mais jogado api');
+        // const api = await apiClient();
+        // const response = await api.get('/quizzes/most-played-quiz');
+        // console.log('most played', response.data);
+        // setMostQuizPlayed(response.data.mostPlayedQuiz);
       } catch (error) {
         console.error('Error:', error);
       }
@@ -168,6 +168,8 @@ const RecentQuizzes = ({ quizzes, onQuizSelect }: any) => (
             <View style={styles.liveQuizInfo}>
               <Text style={styles.liveQuizName}>{item.title}</Text>
               <Text style={styles.liveQuizDetail}>{item.description}</Text>
+
+              <Text style={styles.quizCode}>Código: {item?.gameSessions[0]?.code}</Text>
             </View>
             <FontAwesome name="chevron-right" size={18} color="#6A5AE0" />
           </View>
@@ -176,7 +178,6 @@ const RecentQuizzes = ({ quizzes, onQuizSelect }: any) => (
     />
   </View>
 );
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -345,5 +346,10 @@ const styles = StyleSheet.create({
   liveQuizDetail: {
     fontSize: 14,
     color: '#666',
+  },
+  quizCode: {
+    fontSize: 12,
+    color: '#777777',
+    marginTop: 5,
   },
 });

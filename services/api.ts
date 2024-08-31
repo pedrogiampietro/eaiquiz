@@ -4,7 +4,7 @@ import { ToastAndroid } from 'react-native';
 import { useRouter } from 'expo-router';
 
 const limit = 20;
-export const baseURL = process.env.REACT_APP_API_URL || 'https://eaiquiz-api.vercel.app';
+export const baseURL = process.env.REACT_APP_API_URL || 'http://192.168.1.7:5000';
 
 /**
  * Cria uma instância do axios com configuração predefinida.
