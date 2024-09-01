@@ -15,14 +15,7 @@ const modalBackground = require('../assets/ui/modal-rewards-ui.png');
 const starBig = require('../assets/star_big.png');
 const starSmall = require('../assets/star_small.png');
 
-export function RewardsModal({
-  visible,
-  score,
-  correctAnswers,
-  rewardAmount,
-  onClose,
-  opponentStatus,
-}: any) {
+export function RewardsModal({ visible, score, correctAnswers, onClose }: any) {
   const router = useRouter();
   const getStarImages = () => {
     let starImages = [];
@@ -58,9 +51,8 @@ export function RewardsModal({
                 />
               ))}
             </View>
-            <Text style={styles.opponentText}>{opponentStatus}</Text>
+
             <Text style={styles.scoreText}>{score}</Text>
-            <Text style={styles.rewardText}>{rewardAmount}</Text>
 
             <TouchableOpacity
               style={styles.okButton}
@@ -125,14 +117,14 @@ const styles = StyleSheet.create({
     left: 78,
     bottom: -35,
   },
-  opponentText: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    fontStyle: 'italic',
-    color: '#fff',
-    position: 'absolute',
-    top: 65,
-  },
+  // opponentText: {
+  //   fontSize: 14,
+  //   fontWeight: 'bold',
+  //   fontStyle: 'italic',
+  //   color: '#fff',
+  //   position: 'absolute',
+  //   top: 65,
+  // },
   scoreText: {
     fontSize: 20,
     fontWeight: 'bold',

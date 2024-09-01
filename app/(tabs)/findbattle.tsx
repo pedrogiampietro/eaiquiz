@@ -5,13 +5,13 @@ import {
   Text,
   ScrollView,
   TouchableOpacity,
-  Image,
   Modal,
   ActivityIndicator,
 } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { apiClient } from '~/services/api';
 import { useAuth } from 'hooks/useAuth';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 export default function FindBattle() {
   const router = useRouter();
@@ -35,7 +35,6 @@ export default function FindBattle() {
     try {
       const api = await apiClient();
 
-      // Verifique se há quizzes existentes
       const existingQuizResponse = await api.get('/quizzes/getOrCreate', {
         params: { theme, userId: user?.id },
       });
@@ -44,11 +43,9 @@ export default function FindBattle() {
       let gameSessionId;
 
       if (existingQuizResponse.data.quiz) {
-        // Utilize o quiz existente
         quizId = existingQuizResponse.data.quiz.id;
         console.log(`Quiz existente encontrado: ${quizId}`);
       } else {
-        // Se não houver quiz existente, gere um novo
         const quizResponse = await api.post('/quizzes/generate', {
           theme,
           creatorId: user?.id,
@@ -58,7 +55,6 @@ export default function FindBattle() {
         quizId = quizResponse.data.quiz.id;
       }
 
-      // Criar uma nova sessão de jogo ou juntar-se a uma existente
       const sessionResponse = await api.post('/games/sessions', {
         theme,
         quizId,
@@ -90,60 +86,63 @@ export default function FindBattle() {
         <View style={styles.cardsContainer}>
           <TouchableOpacity
             onPress={() => handleCardSelection('biologia e ciencias')}
-            style={styles.card}>
-            <Image
-              style={styles.cardImage}
-              source={require('../../assets/cards/biologia-ciencias.png')}
-            />
+            style={[styles.card, styles.cardBiologia]}>
+            <View style={styles.iconContainer}>
+              <MaterialCommunityIcons name="leaf" size={30} color="#4CAF50" />
+            </View>
+            <Text style={styles.cardTitle}>Biologia e Ciências</Text>
+            <Text style={styles.cardSubtitle}>Gerado por IA</Text>
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => handleCardSelection('cinema e arte')}
-            style={styles.card}>
-            <Image
-              style={styles.cardImage}
-              source={require('../../assets/cards/cinema-arte.png')}
-            />
+            style={[styles.card, styles.cardCinema]}>
+            <View style={styles.iconContainer}>
+              <MaterialCommunityIcons name="movie" size={30} color="#FF5722" />
+            </View>
+            <Text style={styles.cardTitle}>Cinema e Arte</Text>
+            <Text style={styles.cardSubtitle}>Gerado por IA</Text>
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => handleCardSelection('jogos e tecnologia')}
-            style={styles.card}>
-            <Image
-              style={styles.cardImage}
-              source={require('../../assets/cards/jogos-tecnologia.png')}
-            />
+            style={[styles.card, styles.cardJogos]}>
+            <View style={styles.iconContainer}>
+              <MaterialCommunityIcons name="gamepad-variant" size={30} color="#9C27B0" />
+            </View>
+            <Text style={styles.cardTitle}>Jogos e Tecnologia</Text>
+            <Text style={styles.cardSubtitle}>Gerado por IA</Text>
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => handleCardSelection('matematica e outros')}
-            style={styles.card}>
-            <Image
-              style={styles.cardImage}
-              source={require('../../assets/cards/matematica-fisica.png')}
-            />
+            style={[styles.card, styles.cardMatematica]}>
+            <View style={styles.iconContainer}>
+              <MaterialCommunityIcons name="calculator" size={30} color="#2196F3" />
+            </View>
+            <Text style={styles.cardTitle}>Matemática e Outros</Text>
+            <Text style={styles.cardSubtitle}>Gerado por IA</Text>
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => handleCardSelection('historia e geografia')}
-            style={styles.card}>
-            <Image
-              style={styles.cardImage}
-              source={require('../../assets/cards/historia-geografia.png')}
-            />
+            style={[styles.card, styles.cardHistoria]}>
+            <View style={styles.iconContainer}>
+              <MaterialCommunityIcons name="book" size={30} color="#FFEB3B" />
+            </View>
+            <Text style={styles.cardTitle}>História e Geografia</Text>
+            <Text style={styles.cardSubtitle}>Gerado por IA</Text>
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => handleCardSelection('linguas e literatura')}
-            style={styles.card}>
-            <Image
-              style={styles.cardImage}
-              source={require('../../assets/cards/linguas-literatura.png')}
-            />
+            style={[styles.card, styles.cardLinguas]}>
+            <View style={styles.iconContainer}>
+              <MaterialCommunityIcons name="book-open-variant" size={30} color="#795548" />
+            </View>
+            <Text style={styles.cardTitle}>Línguas e Literatura</Text>
+            <Text style={styles.cardSubtitle}>Gerado por IA</Text>
           </TouchableOpacity>
         </View>
 
-        <View style={styles.container}>
-          <Text style={styles.title}>Ou crie um tema custom</Text>
-          <TouchableOpacity onPress={() => router.push('/create-quiz')}>
-            <Image source={require('../../assets/create-quiz-card.png')} />
-          </TouchableOpacity>
-        </View>
+        <TouchableOpacity onPress={() => router.push('/create-quiz')} style={styles.nextButton}>
+          <Text style={styles.nextButtonText}>Criar um Customizado</Text>
+        </TouchableOpacity>
 
         {/* Modal for finding opponent */}
         <Modal
@@ -168,6 +167,7 @@ export default function FindBattle() {
     </ScrollView>
   );
 }
+
 const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
@@ -194,16 +194,71 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'center',
+    marginVertical: 10,
   },
   card: {
-    width: 100,
-    height: 100,
+    width: 150,
+    height: 150,
+    borderRadius: 15,
     margin: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 10,
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+    shadowOffset: { width: 0, height: 3 },
   },
-  cardImage: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 10,
+  cardBiologia: {
+    backgroundColor: '#A8E6CF',
+  },
+  cardCinema: {
+    backgroundColor: '#FFCCBC',
+  },
+  cardJogos: {
+    backgroundColor: '#E1BEE7',
+  },
+  cardMatematica: {
+    backgroundColor: '#BBDEFB',
+  },
+  cardHistoria: {
+    backgroundColor: '#e6da73eb',
+  },
+  cardLinguas: {
+    backgroundColor: '#D7CCC8',
+  },
+  iconContainer: {
+    backgroundColor: '#FFF',
+    borderRadius: 50,
+    padding: 10,
+    marginBottom: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  cardTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#FFF',
+  },
+  cardSubtitle: {
+    fontSize: 14,
+    color: '#FFF',
+  },
+  nextButton: {
+    marginTop: 20,
+    backgroundColor: '#FFF',
+    borderRadius: 25,
+    paddingVertical: 15,
+    paddingHorizontal: 30,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    shadowOffset: { width: 0, height: 5 },
+  },
+  nextButtonText: {
+    fontSize: 18,
+    color: '#6A5AE0',
+    fontWeight: 'bold',
   },
   modalOverlay: {
     flex: 1,

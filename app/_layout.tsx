@@ -1,10 +1,9 @@
+import React, { useEffect } from 'react';
 import { useAuth } from '~/hooks/useAuth';
 import { AuthProvider } from '../contexts/AuthContext';
-import React, { useEffect } from 'react';
 import AuthLayout from './layouts/AuthLayout';
-import MainLayout from './layouts/MainLayout';
+import MainLayout from './layouts/MainLayout'; // Importando o layout principal
 import { useRouter } from 'expo-router';
-import { ActivityIndicator } from 'react-native';
 
 export default function RootLayout() {
   return (
@@ -19,14 +18,22 @@ function ConditionalLayout() {
   const router = useRouter();
 
   useEffect(() => {
+    // Se o usuário não estiver carregando e não estiver autenticado, redireciona para a tela de login
     if (!loading && !user) {
-      router.push('/login');
+      router.replace('/login');
     }
   }, [loading, user, router]);
 
+  // Exibe um placeholder enquanto a autenticação está sendo carregada
   if (loading) {
-    return <ActivityIndicator color="#FFF" />;
+    return null; // Ou um componente de loader
   }
 
-  return user ? <MainLayout /> : <AuthLayout />;
+  // Se o usuário não estiver autenticado, retorna o layout de autenticação
+  if (!user) {
+    return <AuthLayout />;
+  }
+
+  // Se o usuário estiver autenticado, retorna o layout principal
+  return <MainLayout />;
 }

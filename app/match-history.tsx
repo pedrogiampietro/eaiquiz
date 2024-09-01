@@ -28,8 +28,20 @@ export default function MatchHistory({ userId }: any) {
   const renderCompletedMatchItem = ({ item }: any) => (
     <View style={styles.matchItem}>
       <Text style={styles.matchTitle}>Quiz: {item.quiz.title}</Text>
-      <Text style={styles.matchResult}>Status: Completa</Text>
-      <Text style={styles.matchDate}>Data: {new Date(item.playedAt).toLocaleDateString()}</Text>
+      <Text style={styles.matchResult}>
+        Resultado:{' '}
+        {item.result === 'won' ? 'Vitória' : item.result === 'lost' ? 'Derrota' : 'Empate'}
+      </Text>
+      <Text style={styles.matchScore}>Pontuação: {item.userScore}</Text>
+      <Text style={styles.matchScoreDifference}>Diferença de Pontos: {item.scoreDifference}</Text>
+      <Text style={styles.matchDate}>
+        Data:{' '}
+        {new Date(item.updatedAt).toLocaleDateString('pt-BR', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+        })}
+      </Text>
     </View>
   );
 
@@ -37,7 +49,14 @@ export default function MatchHistory({ userId }: any) {
     <View style={styles.matchItem}>
       <Text style={styles.matchTitle}>Quiz: {item.quiz.title}</Text>
       <Text style={styles.matchResult}>Status: {item.status}</Text>
-      <Text style={styles.matchDate}>Data: {new Date(item.createdAt).toLocaleDateString()}</Text>
+      <Text style={styles.matchDate}>
+        Data:{' '}
+        {new Date(item.createdAt).toLocaleDateString('pt-BR', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+        })}
+      </Text>
     </View>
   );
 
@@ -82,7 +101,7 @@ const styles = StyleSheet.create({
   },
   scrollViewContainer: {
     padding: 20,
-    paddingBottom: 100, // Padding extra para evitar que o conteúdo seja coberto por elementos fixos na parte inferior
+    paddingBottom: 100,
   },
   sectionTitle: {
     fontSize: 18,
@@ -102,6 +121,14 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   matchResult: {
+    fontSize: 14,
+    color: '#333',
+  },
+  matchScore: {
+    fontSize: 14,
+    color: '#333',
+  },
+  matchScoreDifference: {
     fontSize: 14,
     color: '#333',
   },

@@ -17,7 +17,7 @@ import StatsSection from 'components/StatsSection';
 import { useAuth } from '~/hooks/useAuth';
 import { apiClient } from '~/services/api';
 import { getInitials } from '~/utils';
-import MatchHistory from '../layouts/match-history';
+import MatchHistory from '../match-history';
 
 const maskGroupProfile = require('../../assets/mask-group-profile.png');
 const lockedBadge = require('../../assets/badges/locked-badge.png');
