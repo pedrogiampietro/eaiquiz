@@ -13,7 +13,7 @@ export default function DuelQuiz() {
   const [score, setScore] = useState(0);
   const [opponentScore, setOpponentScore] = useState<any>(null);
   const [opponentStatus, setOpponentStatus] = useState('pending');
-  const [timer, setTimer] = useState(10);
+  const [timer, setTimer] = useState(40);
   const [showResultModal, setShowResultModal] = useState(false);
 
   const { quizId, gameSessionId } = useLocalSearchParams();
@@ -119,7 +119,7 @@ export default function DuelQuiz() {
   const handleNextQuestion = () => {
     if (currentQuestionIndex < questions.length - 1) {
       setSelectedOption(null);
-      setTimer(10);
+      setTimer(40);
       setCurrentQuestionIndex(currentQuestionIndex + 1);
     } else {
       endQuiz();
@@ -166,7 +166,6 @@ export default function DuelQuiz() {
           correctAnswers={score}
           opponentStatus={opponentStatus}
           opponentScore={opponentScore}
-          rewardAmount={0}
           onClose={() => setShowResultModal(false)}
         />
       </View>

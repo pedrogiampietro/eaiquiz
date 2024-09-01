@@ -41,8 +41,14 @@ export const CustomHeaderHome = () => {
             />
           </View>
 
-          <Text style={[styles.levelText, { right: user?.level === 1 ? 143 : 150 }]}>
-            {user?.level}
+          <Text
+            style={[
+              styles.levelText,
+              {
+                right: user && user.level >= 1 && user.level <= 9 ? 143 : 150,
+              },
+            ]}>
+            {user ? user.level : ''}
           </Text>
         </View>
       </View>

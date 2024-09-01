@@ -32,7 +32,7 @@
         "backgroundColor": "#ffffff"
       },
       "package": "com.eaiquiz",
-      "versionCode": 2
+      "versionCode": 3
     },
     "extra": {
       "router": {

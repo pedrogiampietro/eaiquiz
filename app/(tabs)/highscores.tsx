@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { apiClient } from '~/services/api';
+import { getInitials } from '~/utils';
 
 const podiumImage = require('../../assets/podium.png');
 const kingIcon = require('../../assets/king-icon.png');
@@ -52,12 +53,14 @@ export default function Highscores() {
                       ? styles.secondPlace
                       : styles.thirdPlace,
                 ]}>
-                <Image
-                  source={{
-                    uri: player.user.profileImage || 'https://github.com/pedrogiampietro.png',
-                  }}
-                  style={styles.playerImage}
-                />
+                {player?.profileImage ? (
+                  <Image source={{ uri: player?.profileImage || '' }} style={styles.playerImage} />
+                ) : (
+                  <View style={styles.avatarFallback}>
+                    <Text style={styles.avatarText}>{getInitials(player.user.name || 'User')}</Text>
+                  </View>
+                )}
+
                 {index === 0 && <Image source={kingIcon} style={styles.kingIcon} />}
                 <Text style={styles.playerName}>{player.user.name}</Text>
                 <View style={styles.badge}>
@@ -100,12 +103,21 @@ export default function Highscores() {
                 </View>
               </View>
               <View style={styles.avatarContainer}>
-                <Image
-                  source={{
-                    uri: player.user.profileImage || 'https://github.com/pedrogiampietro.png',
-                  }}
-                  style={styles.playerAvatar}
-                />
+                <View style={styles.avatarContainer}>
+                  {player?.profileImage ? (
+                    <Image
+                      source={{ uri: player?.profileImage || '' }}
+                      style={styles.playerAvatar}
+                    />
+                  ) : (
+                    <View style={styles.avatarFallback}>
+                      <Text style={styles.avatarText}>
+                        {getInitials(player.user.name || 'User')}
+                      </Text>
+                    </View>
+                  )}
+                </View>
+
                 <Image
                   source={{ uri: getFlagUri(player.user.country) }}
                   style={styles.playerCountryIcon}
@@ -286,6 +298,33 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 50,
+  },
+  profileImageWrapper: {
+    position: 'absolute',
+    top: -40,
+    alignSelf: 'center',
+    alignItems: 'center',
+  },
+  profileImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    borderWidth: 4,
+    borderColor: '#BF83FF',
+  },
+  avatarFallback: {
+    width: 60,
+    height: 60,
+    borderRadius: 50,
+    marginBottom: 10,
+    backgroundColor: '#5f52c5',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  avatarText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
   },
   playerCountryIcon: {
     width: 20,

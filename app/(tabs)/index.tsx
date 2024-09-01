@@ -1,11 +1,17 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useRouter, Stack } from 'expo-router';
-import { StyleSheet, View, Text, Image, TouchableOpacity, FlatList } from 'react-native';
+import {
+  StyleSheet,
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  FlatList,
+  ActivityIndicator,
+} from 'react-native';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { apiClient } from '~/services/api';
 import { useAuth } from '~/hooks/useAuth';
-import { RewardsModal } from '~/components/RewardsModal';
-import { EvilIcons } from '@expo/vector-icons';
 
 const quizCardImage = require('../../assets/recent-quiz.png');
 const featuredCardImage = require('../../assets/mask-group.png');
@@ -22,43 +28,55 @@ const sections = [
 export default function Home() {
   const [recentQuizzes, setRecentQuizzes] = useState([]);
   const [mostQuizPlayed, setMostQuizPlayed] = useState([]);
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
   const { user } = useAuth();
 
+  // Função para buscar quizzes recentes
+  const fetchRecentQuizzes = useCallback(async () => {
+    setLoading(true); // Start loading
+    try {
+      const api = await apiClient();
+      const response = await api.get('/quizzes/recent');
+
+      // Filter quizzes that have a valid code in their game sessions
+      const quizzesWithCode = response.data.filter(
+        (quiz: any) =>
+          quiz.gameSessions && quiz.gameSessions.length > 0 && quiz.gameSessions[0].code
+      );
+
+      setRecentQuizzes(quizzesWithCode);
+    } catch (error) {
+      console.error('Erro ao buscar quizzes recentes:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [setLoading]);
+
+  const fetchQuizMorePlaying = useCallback(async () => {
+    setLoading(true);
+    try {
+      const api = await apiClient();
+      const response = await api.get('/quizzes/most-played-quiz');
+      setMostQuizPlayed(response.data.mostPlayedQuiz);
+    } catch (error) {
+      console.error('Error:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [setLoading]);
+
   useEffect(() => {
-    const fetchRecentQuizzes = async () => {
-      try {
-        const api = await apiClient();
-        const response = await api.get('/quizzes/recent');
-
-        setRecentQuizzes(response.data);
-      } catch (error) {
-        console.error('Erro ao buscar quizzes recentes:', error);
-      }
-    };
-
-    fetchRecentQuizzes();
-  }, []);
-
-  useEffect(() => {
-    const fetchQuizMorePlaying = async () => {
-      try {
-        const api = await apiClient();
-        const response = await api.get('/quizzes/most-played-quiz');
-        console.log('most played', response.data);
-        setMostQuizPlayed(response.data.mostPlayedQuiz);
-      } catch (error) {
-        console.error('Error:', error);
-      }
-    };
-    fetchQuizMorePlaying();
+    if (user) {
+      fetchRecentQuizzes();
+      fetchQuizMorePlaying();
+    }
   }, []);
 
   const handleQuizSelection = async (theme: string) => {
+    setLoading(true);
     try {
       const api = await apiClient();
-
-      // Verifique se há quizzes existentes
       const existingQuizResponse = await api.get('/quizzes/getOrCreate', {
         params: { theme, userId: user?.id },
       });
@@ -67,11 +85,9 @@ export default function Home() {
       let gameSessionId;
 
       if (existingQuizResponse.data.quiz) {
-        // Utilize o quiz existente
         quizId = existingQuizResponse.data.quiz.id;
       }
 
-      // Criar uma nova sessão de jogo ou juntar-se a uma existente
       const sessionResponse = await api.post('/games/sessions', {
         theme,
         quizId,
@@ -87,12 +103,23 @@ export default function Home() {
       });
     } catch (error) {
       console.error('Error:', error);
+    } finally {
+      setLoading(false); // Finalizar o carregamento
     }
   };
 
   const handleFriends = () => {
     router.push('/friends');
   };
+
+  if (loading) {
+    return (
+      <ActivityIndicator
+        color={'#6A5AE0'}
+        style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
+      />
+    );
+  }
 
   return (
     <>
@@ -118,6 +145,7 @@ export default function Home() {
   );
 }
 
+// Componentes RecentQuiz, Featured e RecentQuizzes permanecem os mesmos
 const RecentQuiz = ({ mostQuizPlayed }: any) => (
   <View style={styles.quizContainer}>
     <View style={styles.quizContent}>
@@ -168,6 +196,8 @@ const RecentQuizzes = ({ quizzes, onQuizSelect }: any) => (
             <View style={styles.liveQuizInfo}>
               <Text style={styles.liveQuizName}>{item.title}</Text>
               <Text style={styles.liveQuizDetail}>{item.description}</Text>
+
+              <Text style={styles.quizCode}>Código: {item?.gameSessions[0]?.code}</Text>
             </View>
             <FontAwesome name="chevron-right" size={18} color="#6A5AE0" />
           </View>
@@ -178,6 +208,7 @@ const RecentQuizzes = ({ quizzes, onQuizSelect }: any) => (
 );
 
 const styles = StyleSheet.create({
+  // Estilos permanecem os mesmos
   container: {
     flex: 1,
     paddingHorizontal: 0,
@@ -220,8 +251,10 @@ const styles = StyleSheet.create({
   },
   quizPercentageContainer: {
     position: 'absolute',
-    top: 15,
-    right: 25,
+    bottom: 19,
+    right: 33,
+    backgroundColor: 'rgba(0, 0, 0, 0.2)',
+    borderRadius: 25,
     width: 50,
     height: 50,
     justifyContent: 'center',
@@ -345,5 +378,10 @@ const styles = StyleSheet.create({
   liveQuizDetail: {
     fontSize: 14,
     color: '#666',
+  },
+  quizCode: {
+    fontSize: 12,
+    color: '#777777',
+    marginTop: 5,
   },
 });

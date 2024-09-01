@@ -18,24 +18,38 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const router = useRouter();
 
   useEffect(() => {
+    let isMounted = true;
+
     const loadStorageData = async () => {
       try {
         const storedUser = await AsyncStorage.getItem('user@eaiquiz');
 
-        if (storedUser) {
-          setUser(JSON.parse(storedUser) as User);
-        } else {
-          await logout();
+        if (isMounted) {
+          if (storedUser) {
+            setUser(JSON.parse(storedUser) as User);
+          } else {
+            setLoading(false); // Set loading to false before navigating
+            await logout();
+          }
         }
       } catch (error) {
         console.error('Error loading storage data:', error);
-        await logout();
+        if (isMounted) {
+          setLoading(false); // Ensure loading is false before navigating
+          await logout();
+        }
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     };
 
     loadStorageData();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const login = async (email: string, password: string) => {
@@ -62,7 +76,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     await AsyncStorage.removeItem('token@eaiquiz');
     await AsyncStorage.removeItem('refreshToken@eaiquiz');
     await AsyncStorage.removeItem('user@eaiquiz');
-    router.push('/login');
+
+    const redirectTimer = setTimeout(() => {
+      router.push('/login');
+    }, 1000);
+
+    return () => clearTimeout(redirectTimer);
   };
 
   const updateUser = async () => {
